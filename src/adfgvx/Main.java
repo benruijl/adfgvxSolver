@@ -32,17 +32,16 @@ public class Main {
     private static final Logger LOG = Logger.getLogger(Main.class);
     private int correctAnalysis = 0;
 
-    private Map<Integer[], Float> patternFreq;
+    private Map<IntArrayWrapper, Float> patternFreq;
 
     public Main(String cipherText, String pat) {
-	patternFreq = new HashMap<Integer[], Float>();
+	patternFreq = new HashMap<IntArrayWrapper, Float>();
 
 	// write pattern file
-	try {
-	    writePattern(readCipher(cipherText));
-	} catch (IOException e) {
-	    e.printStackTrace();
-	}
+	/*
+	 * try { writePattern(readCipher(cipherText)); } catch (IOException e) {
+	 * e.printStackTrace(); }
+	 */
 
 	try {
 	    readPatternTetagrams(pat);
@@ -340,18 +339,18 @@ public class Main {
 	    }
 	}
 
-	Map<Integer[], Float> patFreq = calcPatternFreq(buffer.toString());
+	Map<IntArrayWrapper, Float> patFreq = calcPatternFreq(buffer.toString());
 
 	return patternSimilarity(patternFreq, patFreq); // compare the
 							// frequencies
 
     }
 
-    public int patternSimilarity(Map<Integer[], Float> a,
-	    Map<Integer[], Float> b) {
+    public int patternSimilarity(Map<IntArrayWrapper, Float> a,
+	    Map<IntArrayWrapper, Float> b) {
 	int score = 0;
 
-	for (Integer[] key : b.keySet()) {
+	for (IntArrayWrapper key : b.keySet()) {
 	    Float first = a.get(key);
 	    Float second = b.get(key);
 
@@ -366,20 +365,20 @@ public class Main {
 	return score;
     }
 
-    public Map<Integer[], Float> calcPatternFreq(String text) {
-	Map<Integer[], Float> patternFreq = new HashMap<Integer[], Float>();
+    public Map<IntArrayWrapper, Float> calcPatternFreq(String text) {
+	Map<IntArrayWrapper, Float> patternFreq = new HashMap<IntArrayWrapper, Float>();
 
 	for (int i = 0; i < text.length() - 4; i++) {
-	    Integer pat[] = { 0, 1, 2, 3 };
+	    int[] initData = { 0, 1, 2, 3 };
+	    IntArrayWrapper pat = new IntArrayWrapper(initData);
 
 	    int highest = 0;
 	    for (int j = 0; j < 4; j++) {
 		boolean found = false;
 
 		for (int k = 0; k < j; k++) {
-		    if (text.charAt(i + j) == (text.charAt(i + k)) {
-			pat[j] = k;
-
+		    if (text.charAt(i + j) == text.charAt(i + k)) {
+			pat.getData()[j] = k;
 			found = true;
 			break;
 		    }
@@ -387,7 +386,7 @@ public class Main {
 
 		if (!found) {
 		    highest++;
-		    pat[j] = highest;
+		    pat.getData()[j] = highest;
 		}
 	    }
 
@@ -410,13 +409,13 @@ public class Main {
 	int size = in.readInt();
 
 	for (int i = 0; i < size; i++) {
-	    Integer[] tet = new Integer[4];
+	    int[] tet = new int[4];
 	    for (int j = 0; j < 4; j++) {
 		tet[j] = in.readInt();
 	    }
 
 	    Float freq = (float) in.readDouble();
-	    patternFreq.put(tet, freq);
+	    patternFreq.put(new IntArrayWrapper(tet), freq);
 	}
 
 	LOG.info("Tetagrams read.");
@@ -425,21 +424,22 @@ public class Main {
     }
 
     public void writePattern(String text) throws IOException {
-	Map<Integer[], Float> patTet = calcPatternFreq(text);
+	Map<IntArrayWrapper, Float> patTet = calcPatternFreq(text);
 
 	OutputStream fstream = new FileOutputStream("pat.dat");
 	DataOutputStream out = new DataOutputStream(fstream);
 	out.writeInt(patTet.size());
 
 	/* Print the map */
-	for (Entry<Integer[], Float> entry : patTet.entrySet()) {
+	for (Entry<IntArrayWrapper, Float> entry : patTet.entrySet()) {
 	    for (int i = 0; i < 4; i++) {
-		System.out.print(entry.getKey()[i]);
-		out.writeInt(entry.getKey()[i]);
+		System.out.print(entry.getKey().getData()[i]);
+		out.writeInt(entry.getKey().getData()[i]);
 	    }
 
-	    System.out.print(" " + (float) entry.getValue()
-		    / (text.length() - 3) + "\n");
+	    System.out.print(" "
+		    + Math.log((float) entry.getValue() / (text.length() - 3))
+		    + "\n");
 
 	    out.writeDouble(Math.log(entry.getValue()
 		    / (double) (text.length() - 3)));
