@@ -37,6 +37,13 @@ public class Main {
     public Main(String cipherText, String pat) {
 	patternFreq = new HashMap<Integer[], Float>();
 
+	// write pattern file
+	try {
+	    writePattern(readCipher(cipherText));
+	} catch (IOException e) {
+	    e.printStackTrace();
+	}
+
 	try {
 	    readPatternTetagrams(pat);
 	} catch (IOException e) {
@@ -64,13 +71,6 @@ public class Main {
     public String encrypt(String cipherFileName) {
 	/* Read ciphertext. */
 	String cipherText = readCipher(cipherFileName);
-
-	// write pattern file
-	try {
-	    writePattern(cipherText);
-	} catch (IOException e) {
-	    e.printStackTrace();
-	}
 
 	Random r = new Random();
 
@@ -250,9 +250,15 @@ public class Main {
 	// match pattern
 	List<List<Character>> charCol = new ArrayList<List<Character>>();
 	List<List<Character>> charRow = new ArrayList<List<Character>>();
-	
-	// TODO: add data to charCol and charRow
-		
+
+	for (int i = 0; i < gridData.size(); i++) {
+	    if (col.contains(freqs.get(i))) {
+		charCol.add(gridData.get(i));
+	    } else {
+		charRow.add(gridData.get(i));
+	    }
+	}
+
 	findOptimalPatternDistribution(charCol, charRow);
 
 	// see if it is correct
@@ -368,14 +374,20 @@ public class Main {
 
 	    int highest = 0;
 	    for (int j = 0; j < 4; j++) {
+		boolean found = false;
+
 		for (int k = 0; k < j; k++) {
-		    if (text.charAt(i + j) == text.charAt(i + k)) {
+		    if (text.charAt(i + j) == (text.charAt(i + k)) {
 			pat[j] = k;
+
+			found = true;
 			break;
 		    }
+		}
 
-		    pat[j] = highest;
+		if (!found) {
 		    highest++;
+		    pat[j] = highest;
 		}
 	    }
 
@@ -407,7 +419,7 @@ public class Main {
 	    patternFreq.put(tet, freq);
 	}
 
-	System.out.println("Tetagrams read.");
+	LOG.info("Tetagrams read.");
 
 	in.close();
     }
@@ -421,12 +433,13 @@ public class Main {
 
 	/* Print the map */
 	for (Entry<Integer[], Float> entry : patTet.entrySet()) {
-	    System.out.println(entry.getKey() + " " + (float) entry.getValue()
-		    / (text.length() - 3));
-
 	    for (int i = 0; i < 4; i++) {
+		System.out.print(entry.getKey()[i]);
 		out.writeInt(entry.getKey()[i]);
 	    }
+
+	    System.out.print(" " + (float) entry.getValue()
+		    / (text.length() - 3) + "\n");
 
 	    out.writeDouble(Math.log(entry.getValue()
 		    / (double) (text.length() - 3)));
