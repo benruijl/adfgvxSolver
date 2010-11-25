@@ -32,6 +32,7 @@ public class Main {
     private static final Logger LOG = Logger.getLogger(Main.class);
     private int correctAnalysis = 0;
 
+    private Map<String, Double> tetagrams;
     private Map<IntArrayWrapper, Float> patternFreq;
 
     public Main(String cipherText, String pat) {
@@ -287,6 +288,9 @@ public class Main {
 		+ Math.max(correct, correctTrans) + "/" + key.size());
 
 	if (Math.max(correct, correctTrans) == key.size()) {
+	    // transposition grid is correct, now do mono sub solving
+	    hillClimb(mapBigramToMonogram(charRow, charCol), randomAlphabet());
+
 	    correctAnalysis++;
 	}
     }
@@ -327,23 +331,12 @@ public class Main {
 
     public int patternFitness(List<List<Character>> col,
 	    List<List<Character>> row) {
-	String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-	StringBuffer buffer = new StringBuffer();
 
-	/* Generate text from cols and rows */
-	for (int j = 0; j < row.size(); j++) { // which row
-	    for (int i = 0; i < row.size(); i++) { // which col
-		int index = PolybiusSquare.keyNameToIndex(row.get(i).get(j))
-			* 6 + PolybiusSquare.keyNameToIndex(col.get(i).get(j));
-		buffer.append(alphabet.charAt(index));
-	    }
-	}
-
-	Map<IntArrayWrapper, Float> patFreq = calcPatternFreq(buffer.toString());
+	Map<IntArrayWrapper, Float> patFreq = calcPatternFreq(mapBigramToMonogram(
+		row, col));
 
 	return patternSimilarity(patternFreq, patFreq); // compare the
 							// frequencies
-
     }
 
     public int patternSimilarity(Map<IntArrayWrapper, Float> a,
@@ -446,6 +439,122 @@ public class Main {
 	}
 
 	out.close();
+    }
+
+    public String mapBigramToMonogram(List<List<Character>> row,
+	    List<List<Character>> col) {
+	String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+	StringBuffer buffer = new StringBuffer();
+
+	/* Generate text from cols and rows */
+	for (int j = 0; j < row.size(); j++) { // which row
+	    for (int i = 0; i < row.size(); i++) { // which col
+		int index = PolybiusSquare.keyNameToIndex(row.get(i).get(j))
+			* 6 + PolybiusSquare.keyNameToIndex(col.get(i).get(j));
+		buffer.append(alphabet.charAt(index));
+	    }
+	}
+
+	return buffer.toString();
+    }
+
+    public List<Character> hillClimb(String cipherText, List<Character> alphabet) {
+	// TODO: remember oldFitness?
+	for (int i = 0; i < alphabet.size() - 1; i++) {
+	    for (int j = i + 1; j < alphabet.size(); j++) {
+		double oldFitness = fitness(cipherText, alphabet);
+		Collections.swap(alphabet, i, j);
+		double fitness = fitness(cipherText, alphabet);
+
+		if (fitness > oldFitness) {
+		    return hillClimb(cipherText, alphabet);
+		} else {
+		    Collections.swap(alphabet, i, j);
+		}
+	    }
+	}
+
+	System.out.println(transscribeCipherText(cipherText, alphabet));
+	return alphabet;
+    }
+
+    public String transscribeCipherText(String cipherText,
+	    List<Character> alphabet) {
+	/* Transcribe ciphertext */
+	char[] newTextArray = cipherText.toCharArray();
+	for (int i = 0; i < newTextArray.length; i++) {
+	    newTextArray[i] = alphabet.get(newTextArray[i] - 'A');
+	}
+
+	String newText = new String(newTextArray);
+
+	return newText;
+    }
+
+    public void readTetagrams(String filename) throws IOException {
+	InputStream file = new FileInputStream(filename);
+	DataInputStream in = new DataInputStream(file);
+
+	int size = in.readInt();
+
+	for (int i = 0; i < size; i++) {
+	    String tet = new String();
+	    for (int j = 0; j < 4; j++) {
+		tet += in.readChar();
+	    }
+
+	    Double freq = in.readDouble();
+	    tetagrams.put(tet, freq);
+	}
+
+	System.out.println("Tetagrams read.");
+
+	in.close();
+    }
+
+    public double fitness(String cipherText, List<Character> alphabet) {
+	String newText = transscribeCipherText(cipherText, alphabet);
+	Map<String, Integer> cipherTetagrams = new HashMap<String, Integer>();
+
+	for (int i = 0; i < newText.length() - 4; i++) {
+	    String tet = newText.substring(i, i + 4);
+
+	    if (cipherTetagrams.containsKey(tet)) {
+		Integer count = cipherTetagrams.get(tet);
+		cipherTetagrams.put(tet, count + 1);
+	    } else {
+		cipherTetagrams.put(tet, 1);
+	    }
+	}
+
+	double fitness = 0;
+	double sigma = 2.0;
+	for (Map.Entry<String, Integer> entry : cipherTetagrams.entrySet()) {
+	    if (tetagrams.containsKey(entry.getKey())) {
+		Double sourceLogFreq = tetagrams.get(entry.getKey());
+		Double logFreq = Math.log(entry.getValue()
+			/ (double) (newText.length() - 3));
+
+		/* TODO: check if the factor in front of the exp is required. */
+		/* 1.0 / (Math.sqrt(2 * Math.PI) * sigma) */
+		fitness += Math.exp(-(logFreq - sourceLogFreq)
+			* (logFreq - sourceLogFreq) / (2 * sigma * sigma));
+	    }
+	}
+
+	return fitness;
+    }
+
+    public List<Character> randomAlphabet() {
+	String alphabetStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	List<Character> alphabet = new ArrayList<Character>();
+
+	for (int i = 0; i < alphabetStr.length(); i++) {
+	    alphabet.add(alphabetStr.charAt(i));
+	}
+
+	Collections.shuffle(alphabet);
+	return alphabet;
     }
 
     public static void main(String[] args) {
