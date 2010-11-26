@@ -61,7 +61,7 @@ public class PolybiusSquare {
     }
 
     public static PolybiusSquare generateRandomSquare() {
-	String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+	String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
 	List<Character> squareData = new ArrayList<Character>();
 
 	for (int i = 0; i < alphabet.length(); i++) {
