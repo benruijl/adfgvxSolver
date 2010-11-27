@@ -12,6 +12,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -25,6 +26,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 public class Main {
@@ -32,6 +34,7 @@ public class Main {
     private static final Logger LOG = Logger.getLogger(Main.class);
     private int correctAnalysis = 0;
 
+    private String plainAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
     private Map<String, Double> tetagrams;
     private Map<IntArrayWrapper, Float> patternFreq;
 
@@ -82,21 +85,21 @@ public class Main {
             /* Generate an even keylength between 4 and 10. */
             int keyLength = r.nextInt(4) * 2 + 2;
             List<Integer> key = Grid.generateRandomKey(keyLength);
-            LOG.info(key);
+            LOG.info("Key: " + key);
 
             // Shrink ciphertext. It should be a multiple of the key length
-            int timesKeyLength = 200;
+            int timesKeyLength = 400;
             int start = r.nextInt(cipherText.length() - keyLength
                     * timesKeyLength);
             String cipherTextPiece = cipherText.substring(start, start
                     + keyLength * timesKeyLength);
-            LOG.debug(cipherTextPiece);
+            LOG.info("Plain text: " + cipherTextPiece);
 
             String fractionedText = square.encode(cipherTextPiece);
             Grid grid = new Grid(keyLength);
             grid.add(fractionedText);
 
-            doAnalysis(fractionedText, key);
+            // doAnalysis(fractionedText, key);
 
             grid.transpose(key);
 
@@ -174,6 +177,8 @@ public class Main {
     }
 
     public void doAnalysis(String cipher, List<Integer> key) {
+        LOG.info("--------- BEGIN OF ENTRY");
+
         Grid grid = new Grid(key.size());
         grid.add(cipher);
 
@@ -196,7 +201,6 @@ public class Main {
                 freq.put(curKey, freq.get(curKey) + 1);
             }
 
-            // print
             LOG.info(freq);
         }
 
@@ -244,8 +248,8 @@ public class Main {
             }
         }
 
-        LOG.info("Correct (if transposed): " + Math.max(correct, correctTrans)
-                + "/" + key.size());
+        LOG.info("Correct identification of rows and cols: "
+                + Math.max(correct, correctTrans) + "/" + key.size());
 
         // match pattern
         List<List<Character>> charCol = new ArrayList<List<Character>>();
@@ -260,39 +264,42 @@ public class Main {
         }
 
         findOptimalPatternDistribution(charCol, charRow);
-
+        
         // see if it is correct
         correct = 0;
         for (int i = 0; i < key.size(); i++) {
-            if (i % 2 == 0 && charCol.get(i / 2) == gridData.get(invKey[i])) {
+            if (i % 2 == 0 && charCol.get(i / 2) == gridData.get(key.get(i))) {
                 correct++;
             }
 
-            if (i % 2 == 1 && charRow.get(i / 2) == gridData.get(invKey[i])) {
+            if (i % 2 == 1 && charRow.get(i / 2) == gridData.get(key.get(i))) {
                 correct++;
             }
         }
 
         correctTrans = 0;
         for (int i = 0; i < key.size(); i++) {
-            if (i % 2 == 1 && charCol.get(i / 2) == gridData.get(invKey[i])) {
+            if (i % 2 == 1 && charCol.get(i / 2) == gridData.get(key.get(i))) {
                 correctTrans++;
             }
 
-            if (i % 2 == 0 && charRow.get(i / 2) == gridData.get(invKey[i])) {
+            if (i % 2 == 0 && charRow.get(i / 2) == gridData.get(key.get(i))) {
                 correctTrans++;
             }
         }
 
-        LOG.info("Correct after pattern check: "
+        LOG.info("Correct transposition grid after pattern check: "
                 + Math.max(correct, correctTrans) + "/" + key.size());
 
         if (Math.max(correct, correctTrans) == key.size()) {
             // transposition grid is correct, now do mono sub solving
             hillClimb(mapBigramToMonogram(charRow, charCol), randomAlphabet());
+            hillClimb(mapBigramToMonogram(charRow, charCol), randomAlphabet());
 
             correctAnalysis++;
         }
+
+        LOG.info("--------- END OF ENTRY");
     }
 
     public void findOptimalPatternDistribution(List<List<Character>> col,
@@ -443,7 +450,6 @@ public class Main {
 
     public String mapBigramToMonogram(List<List<Character>> row,
             List<List<Character>> col) {
-        String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
         StringBuffer buffer = new StringBuffer();
 
         /* Generate text from cols and rows */
@@ -451,25 +457,36 @@ public class Main {
             for (int i = 0; i < row.size(); i++) { // which col
                 int index = PolybiusSquare.keyNameToIndex(row.get(i).get(j))
                         * 6 + PolybiusSquare.keyNameToIndex(col.get(i).get(j));
-                buffer.append(alphabet.charAt(index));
+                buffer.append(plainAlphabet.charAt(index));
             }
         }
 
         return buffer.toString();
     }
 
-    public List<Character> hillClimb(String cipherText, List<Character> alphabet) {
+    public Map<Character, Character> hillClimb(String cipherText,
+            Map<Character, Character> alphabet) {
         // TODO: remember oldFitness?
         for (int i = 0; i < alphabet.size() - 1; i++) {
             for (int j = i + 1; j < alphabet.size(); j++) {
                 double oldFitness = fitness(cipherText, alphabet);
-                Collections.swap(alphabet, i, j);
+
+                Character[] alphabetArray = alphabet.keySet().toArray(
+                        new Character[0]); // inefficient?
+
+                Character tmp = alphabet.get(alphabetArray[i]);
+                alphabet.put(alphabetArray[i], alphabet.get(alphabetArray[j]));
+                alphabet.put(alphabetArray[j], tmp);
+
                 double fitness = fitness(cipherText, alphabet);
 
                 if (fitness > oldFitness) {
                     return hillClimb(cipherText, alphabet);
                 } else {
-                    Collections.swap(alphabet, i, j);
+                    tmp = alphabet.get(alphabetArray[i]);
+                    alphabet.put(alphabetArray[i],
+                            alphabet.get(alphabetArray[j]));
+                    alphabet.put(alphabetArray[j], tmp);
                 }
             }
         }
@@ -478,17 +495,19 @@ public class Main {
         return alphabet;
     }
 
+    /**
+     * 
+     * @param cipherText
+     * @param alphabet
+     *            Alphabet from ciphertext to plain
+     * @return
+     */
     public String transscribeCipherText(String cipherText,
-            List<Character> alphabet) {
+            Map<Character, Character> alphabet) {
         /* Transcribe ciphertext */
         char[] newTextArray = cipherText.toCharArray();
         for (int i = 0; i < newTextArray.length; i++) {
-            if (newTextArray[i] >= 'A' && newTextArray[i] <= 'Z') {
-                newTextArray[i] = alphabet.get(newTextArray[i] - 'A');
-            } else { // it's a number, which starts at Z - A in the array
-                newTextArray[i] = alphabet
-                        .get(newTextArray[i] - '1' + 'Z' - 'A');
-            }
+            newTextArray[i] = alphabet.get(newTextArray[i]);
         }
 
         String newText = new String(newTextArray);
@@ -517,7 +536,7 @@ public class Main {
         in.close();
     }
 
-    public double fitness(String cipherText, List<Character> alphabet) {
+    public double fitness(String cipherText, Map<Character, Character> alphabet) {
         String newText = transscribeCipherText(cipherText, alphabet);
         Map<String, Integer> cipherTetagrams = new HashMap<String, Integer>();
 
@@ -533,7 +552,7 @@ public class Main {
         }
 
         double fitness = 0;
-        double sigma = 2.0;
+        double sigmaSquared = 2.0;
         for (Map.Entry<String, Integer> entry : cipherTetagrams.entrySet()) {
             if (tetagrams.containsKey(entry.getKey())) {
                 Double sourceLogFreq = tetagrams.get(entry.getKey());
@@ -543,27 +562,33 @@ public class Main {
                 /* TODO: check if the factor in front of the exp is required. */
                 /* 1.0 / (Math.sqrt(2 * Math.PI) * sigma) */
                 fitness += Math.exp(-(logFreq - sourceLogFreq)
-                        * (logFreq - sourceLogFreq) / (2 * sigma * sigma));
+                        * (logFreq - sourceLogFreq) / (2 * sigmaSquared));
             }
         }
 
         return fitness;
     }
 
-    public List<Character> randomAlphabet() {
-        String alphabetStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+    public Map<Character, Character> randomAlphabet() {
         List<Character> alphabet = new ArrayList<Character>();
 
-        for (int i = 0; i < alphabetStr.length(); i++) {
-            alphabet.add(alphabetStr.charAt(i));
+        for (int i = 0; i < plainAlphabet.length(); i++) {
+            alphabet.add(plainAlphabet.charAt(i));
         }
 
         Collections.shuffle(alphabet);
-        return alphabet;
+
+        Map<Character, Character> alphabetMap = new LinkedHashMap<Character, Character>();
+        for (int i = 0; i < plainAlphabet.length(); i++) {
+            alphabetMap.put(plainAlphabet.charAt(i), alphabet.get(i));
+        }
+
+        return alphabetMap;
     }
 
     public static void main(String[] args) {
         BasicConfigurator.configure();
+        LOG.setLevel(Level.INFO);
         LOG.info("Started");
 
         Options options = new Options();
