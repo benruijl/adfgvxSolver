@@ -56,8 +56,8 @@ public class Main {
 	    e.printStackTrace();
 	}
 
-	// String enc = encrypt(cipherText);
-	doHillclimbTestRun(cipherText);
+	 String enc = encrypt(cipherText);
+	//doHillclimbTestRun(cipherText);
     }
 
     public String readCipher(String filename) {
@@ -108,7 +108,8 @@ public class Main {
 	/* Read ciphertext. */
 	String cipherText = readCipher(cipherFileName);
 	Random r = new Random();
-	int textLength = 800;
+	int textLength = 100;
+	int correct = 0;
 
 	for (int i = 0; i < 100; i++) {
 	    int start = r.nextInt(cipherText.length() - textLength);
@@ -121,8 +122,31 @@ public class Main {
 	    String encryptedText = transscribeCipherText(cipherTextPiece,
 		    randomAlphabet());
 
-	    hillClimb(encryptedText, guessAlphabet(encryptedText));
+	    LOG.info("Encrypted text: " + encryptedText);
+	    
+	    float fitness = 0;
+	    Map<Character, Character> bestAlphabet = new HashMap<Character, Character>();
+	    for (int j = 0; j < 20; j++) {
+		Map<Character, Character> newAlphabet = hillClimb(
+			encryptedText, randomAlphabet());
+
+		float newFitness = (float) fitness(encryptedText, newAlphabet);
+		if (newFitness > fitness) {
+		    fitness = newFitness;
+		    bestAlphabet = newAlphabet;
+		}
+	    }
+
+	    LOG.info("ANSWER: "
+		    + transscribeCipherText(encryptedText, bestAlphabet));
+
+	    if (transscribeCipherText(encryptedText, bestAlphabet).equals(
+		    cipherTextPiece)) {
+		correct++;
+	    }
 	}
+
+	LOG.info("Correct decryptions: " + correct);
     }
 
     public String encrypt(String cipherFileName) {
@@ -142,7 +166,7 @@ public class Main {
 	    LOG.info("Key: " + key);
 
 	    // Shrink ciphertext. It should be a multiple of the key length
-	    int timesKeyLength = 400;
+	    int timesKeyLength = 200;
 	    int start = r.nextInt(cipherText.length() - keyLength
 		    * timesKeyLength);
 	    String cipherTextPiece = cipherText.substring(start, start
@@ -347,9 +371,22 @@ public class Main {
 
 	if (Math.max(correct, correctTrans) == key.size()) {
 	    // transposition grid is correct, now do mono sub solving
-	    hillClimb(mapBigramToMonogram(charRow, charCol), randomAlphabet());
-	    hillClimb(mapBigramToMonogram(charRow, charCol), randomAlphabet());
+	    String encryptedText = mapBigramToMonogram(charRow, charCol);
+	    
+	    float fitness = 0;
+	    Map<Character, Character> bestAlphabet = new HashMap<Character, Character>();
+	    for (int j = 0; j < 8; j++) {
+		Map<Character, Character> newAlphabet = hillClimb(
+			encryptedText, randomAlphabet());
 
+		float newFitness = (float) fitness(encryptedText, newAlphabet);
+		if (newFitness > fitness) {
+		    fitness = newFitness;
+		    bestAlphabet = newAlphabet;
+		}
+	    }
+
+	    LOG.info("ANSWER: " + transscribeCipherText(encryptedText, bestAlphabet));
 	    correctAnalysis++;
 	}
 
@@ -525,27 +562,25 @@ public class Main {
 	    for (int j = i + 1; j < alphabet.size(); j++) {
 		double oldFitness = fitness(cipherText, alphabet);
 
-		Character[] alphabetArray = alphabet.keySet().toArray(
-			new Character[0]); // inefficient?
+		Entry<Character, Character>[] alphabetArray = alphabet
+			.entrySet().toArray(new Entry[0]);
 
-		Character tmp = alphabet.get(alphabetArray[i]);
-		alphabet.put(alphabetArray[i], alphabet.get(alphabetArray[j]));
-		alphabet.put(alphabetArray[j], tmp);
+		Character tmp = alphabetArray[i].getValue();
+		alphabetArray[i].setValue(alphabetArray[j].getValue());
+		alphabetArray[j].setValue(tmp);
 
 		double fitness = fitness(cipherText, alphabet);
 
 		if (fitness > oldFitness) {
 		    return hillClimb(cipherText, alphabet);
 		} else {
-		    tmp = alphabet.get(alphabetArray[i]);
-		    alphabet.put(alphabetArray[i],
-			    alphabet.get(alphabetArray[j]));
-		    alphabet.put(alphabetArray[j], tmp);
+		    // swap back
+		    alphabetArray[j].setValue(alphabetArray[i].getValue());
+		    alphabetArray[i].setValue(tmp);
 		}
 	    }
 	}
 
-	LOG.info("ANSWER: " + transscribeCipherText(cipherText, alphabet));
 	return alphabet;
     }
 
@@ -597,8 +632,8 @@ public class Main {
 	for (int i = 0; i < newText.length() - 4; i++) {
 	    String tet = newText.substring(i, i + 4);
 
-	    if (cipherTetagrams.containsKey(tet)) {
-		Integer count = cipherTetagrams.get(tet);
+	    Integer count = cipherTetagrams.get(tet);
+	    if (count != null) {
 		cipherTetagrams.put(tet, count + 1);
 	    } else {
 		cipherTetagrams.put(tet, 1);
@@ -609,8 +644,10 @@ public class Main {
 	double sigmaSquared = 4.0;
 	for (Map.Entry<String, Integer> entry : cipherTetagrams.entrySet()) {
 	    double sourceLogFreq = 0;
-	    if (tetagrams.containsKey(entry.getKey())) {
-		sourceLogFreq = tetagrams.get(entry.getKey());
+
+	    Double freq = tetagrams.get(entry.getKey());
+	    if (freq != null) {
+		sourceLogFreq = freq;
 	    }
 
 	    Double logFreq = Math.log(entry.getValue()
