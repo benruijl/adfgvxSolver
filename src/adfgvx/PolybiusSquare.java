@@ -1,7 +1,6 @@
 package adfgvx;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -58,6 +57,22 @@ public class PolybiusSquare {
 	    inverseSquare.put(squareData.get(i), new Entry(i / 6, i % 6));
 	}
 
+    }
+    
+    public static String mapBigramToMonogram(List<List<Character>> row,
+	    List<List<Character>> col) {
+	StringBuffer buffer = new StringBuffer();
+
+	/* Generate text from cols and rows */
+	for (int j = 0; j < row.get(0).size(); j++) { // which row
+	    for (int i = 0; i < row.size(); i++) { // which col
+		int index = keyNameToIndex(row.get(i).get(j))
+			* 6 + keyNameToIndex(col.get(i).get(j));
+		buffer.append(Encryption.plainAlphabet.charAt(index));
+	    }
+	}
+
+	return buffer.toString();
     }
 
     public static PolybiusSquare generateRandomSquare() {
