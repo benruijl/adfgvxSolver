@@ -56,8 +56,8 @@ public class Main {
 	    e.printStackTrace();
 	}
 
-	 String enc = encrypt(cipherText);
-	//doHillclimbTestRun(cipherText);
+	// String enc = encrypt(cipherText);
+	doHillclimbTestRun(cipherText);
     }
 
     public String readCipher(String filename) {
@@ -103,7 +103,7 @@ public class Main {
 
 	return alphabet;
     }
-
+    
     public void doHillclimbTestRun(String cipherFileName) {
 	/* Read ciphertext. */
 	String cipherText = readCipher(cipherFileName);
@@ -114,19 +114,17 @@ public class Main {
 	for (int i = 0; i < 100; i++) {
 	    int start = r.nextInt(cipherText.length() - textLength);
 
-	    String cipherTextPiece = cipherText.substring(start, start
+	    String plainText = cipherText.substring(start, start
 		    + textLength);
-	    LOG.info("Plain text: " + cipherTextPiece);
+	    LOG.info("Plain text: " + plainText);
 
 	    // encode
-	    String encryptedText = transscribeCipherText(cipherTextPiece,
-		    randomAlphabet());
+	    Map<Character, Character> encryptionAlphabet = randomAlphabet();
+	    String encryptedText = transscribeCipherText(plainText, encryptionAlphabet);
 
-	    LOG.info("Encrypted text: " + encryptedText);
-	    
 	    float fitness = 0;
 	    Map<Character, Character> bestAlphabet = new HashMap<Character, Character>();
-	    for (int j = 0; j < 20; j++) {
+	    for (int j = 0; j < 200; j++) {
 		Map<Character, Character> newAlphabet = hillClimb(
 			encryptedText, randomAlphabet());
 
@@ -137,11 +135,19 @@ public class Main {
 		}
 	    }
 
-	    LOG.info("ANSWER: "
-		    + transscribeCipherText(encryptedText, bestAlphabet));
-
-	    if (transscribeCipherText(encryptedText, bestAlphabet).equals(
-		    cipherTextPiece)) {
+	    // Map<Character, Character> bestAlphabet = simmulatedAnnealing2(
+	    // encryptedText, randomAlphabet(), 0.1, 0.6);
+	    String answer = transscribeCipherText(encryptedText, bestAlphabet);
+	    int count = 0;
+	    for (Entry<Character, Character> entry : Utils.invert(encryptionAlphabet).entrySet()) {
+		if (entry.getValue().equals(bestAlphabet.get(entry.getKey()))) {
+		    count++;
+		}
+	    }
+	    LOG.info("ANSWER: " + answer + " " + count + " correct");
+	    
+	
+	    if (answer.equals(plainText)) {
 		correct++;
 	    }
 	}
@@ -372,7 +378,7 @@ public class Main {
 	if (Math.max(correct, correctTrans) == key.size()) {
 	    // transposition grid is correct, now do mono sub solving
 	    String encryptedText = mapBigramToMonogram(charRow, charCol);
-	    
+
 	    float fitness = 0;
 	    Map<Character, Character> bestAlphabet = new HashMap<Character, Character>();
 	    for (int j = 0; j < 8; j++) {
@@ -386,7 +392,8 @@ public class Main {
 		}
 	    }
 
-	    LOG.info("ANSWER: " + transscribeCipherText(encryptedText, bestAlphabet));
+	    LOG.info("ANSWER: "
+		    + transscribeCipherText(encryptedText, bestAlphabet));
 	    correctAnalysis++;
 	}
 
@@ -555,32 +562,92 @@ public class Main {
 	return buffer.toString();
     }
 
+    public Map<Character, Character> simmulatedAnnealing(String cipherText,
+	    Map<Character, Character> alphabet, double T, double a) {
+
+	Random r = new Random();
+
+	final double absZero = 0.00001;
+	double fitness = fitness(cipherText, alphabet);
+	
+	@SuppressWarnings("unchecked")
+	Entry<Character, Character>[] alphabetArray = alphabet
+	.entrySet().toArray(new Entry[0]);
+
+	while (T > absZero) {
+	    boolean done = false;
+	    double oldFitness = fitness;
+
+	    for (int i = 0; i < alphabet.size() - 1; i++) {
+		if (!done) {
+		    for (int j = i + 1; j < alphabet.size(); j++) {
+			Character tmp = alphabetArray[i].getValue();
+			alphabetArray[i].setValue(alphabetArray[j].getValue());
+			alphabetArray[j].setValue(tmp);
+
+			fitness = fitness(cipherText, alphabet);
+			// LOG.info(fitness - oldFitness);
+
+			if (fitness > oldFitness
+				|| Math.exp((fitness - oldFitness) / T) > r
+					.nextDouble()) {
+			    done = true;
+			    break;
+			} else {
+			    // swap back
+			    alphabetArray[j].setValue(alphabetArray[i]
+				    .getValue());
+			    alphabetArray[i].setValue(tmp);
+
+			}
+		    }
+		}
+	    }
+
+	    T = T * a;
+	}
+
+	return alphabet;
+    }
+
     public Map<Character, Character> hillClimb(String cipherText,
 	    Map<Character, Character> alphabet) {
-	// TODO: remember oldFitness?
-	for (int i = 0; i < alphabet.size() - 1; i++) {
-	    for (int j = i + 1; j < alphabet.size(); j++) {
-		double oldFitness = fitness(cipherText, alphabet);
 
-		Entry<Character, Character>[] alphabetArray = alphabet
-			.entrySet().toArray(new Entry[0]);
+	@SuppressWarnings("unchecked")
+	Entry<Character, Character>[] alphabetArray = alphabet.entrySet()
+		.toArray(new Entry[0]);
 
-		Character tmp = alphabetArray[i].getValue();
-		alphabetArray[i].setValue(alphabetArray[j].getValue());
-		alphabetArray[j].setValue(tmp);
+	boolean goAgain = true;
+	double fitness = fitness(cipherText, alphabet);
 
-		double fitness = fitness(cipherText, alphabet);
+	while (goAgain) {
+	    goAgain = false;
+	    double oldFitness = fitness;
+	    
+	    for (int i = 0; i < alphabet.size() - 1; i++) {
+		if (!goAgain) {
+		    for (int j = i + 1; j < alphabet.size(); j++) {
 
-		if (fitness > oldFitness) {
-		    return hillClimb(cipherText, alphabet);
-		} else {
-		    // swap back
-		    alphabetArray[j].setValue(alphabetArray[i].getValue());
-		    alphabetArray[i].setValue(tmp);
+			Character tmp = alphabetArray[i].getValue();
+			alphabetArray[i].setValue(alphabetArray[j].getValue());
+			alphabetArray[j].setValue(tmp);
+
+			fitness = fitness(cipherText, alphabet);
+
+			if (fitness > oldFitness) {
+			    goAgain = true;
+			    break;
+			} else {
+			    // swap back
+			    alphabetArray[j].setValue(alphabetArray[i]
+				    .getValue());
+			    alphabetArray[i].setValue(tmp);
+			}
+		    }
 		}
 	    }
 	}
-
+	
 	return alphabet;
     }
 
@@ -624,11 +691,17 @@ public class Main {
 
 	in.close();
     }
+    
+    public static double exp(double val) {
+	    final long tmp = (long) (1512775 * val + (1072693248 - 60801));
+	    return Double.longBitsToDouble(tmp << 32);
+    }
 
     public double fitness(String cipherText, Map<Character, Character> alphabet) {
 	String newText = transscribeCipherText(cipherText, alphabet);
 	Map<String, Integer> cipherTetagrams = new HashMap<String, Integer>();
 
+	//long time = System.nanoTime();
 	for (int i = 0; i < newText.length() - 4; i++) {
 	    String tet = newText.substring(i, i + 4);
 
@@ -639,24 +712,29 @@ public class Main {
 		cipherTetagrams.put(tet, 1);
 	    }
 	}
-
+	//LOG.info(System.nanoTime() - time);
+	
 	double fitness = 0;
 	double sigmaSquared = 4.0;
 	for (Map.Entry<String, Integer> entry : cipherTetagrams.entrySet()) {
-	    double sourceLogFreq = 0;
+	    double sourceLogFreq = Double.POSITIVE_INFINITY;
 
 	    Double freq = tetagrams.get(entry.getKey());
 	    if (freq != null) {
 		sourceLogFreq = freq;
+	    } else {
+		//continue;
 	    }
 
 	    Double logFreq = Math.log(entry.getValue()
 		    / (double) (newText.length() - 3));
 
 	    /* TODO: check if the factor in front of the exp is required. */
-	    /* 1.0 / (Math.sqrt(2 * Math.PI) * sigma) */
-	    fitness += Math.exp(-(logFreq - sourceLogFreq)
-		    * (logFreq - sourceLogFreq) / (2.0 * sigmaSquared));
+	    double exponent = -(logFreq - sourceLogFreq) * (logFreq - sourceLogFreq)
+		    / (2.0 * sigmaSquared);
+	    //LOG.info(exponent);
+	    fitness += 1.0 / Math.sqrt(2 * Math.PI * sigmaSquared)
+		    * exp(exponent);
 
 	    // fitness += Math.round(logFreq) == Math.round(sourceLogFreq) ? 1 :
 	    // 0;
