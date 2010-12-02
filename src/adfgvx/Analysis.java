@@ -394,7 +394,7 @@ public class Analysis {
             final int start = r.nextInt(text.length() - textLength);
 
             final String plainText = text.substring(start, start + textLength);
-            LOG.info("Plain text: " + plainText);
+            LOG.info("Plain text:\t\t" + plainText);
 
             // encode
             final Map<Character, Character> encryptionAlphabet = Encryption
@@ -423,11 +423,12 @@ public class Analysis {
             int count = 0;
             for (final Entry<Character, Character> entry : Utils.invert(
                     encryptionAlphabet).entrySet()) {
-                if (entry.getValue().equals(bestAlphabet.get(entry.getKey()))) {
+                if (entry.getValue().equals(bestAlphabet.get(entry.getKey()))
+                        && encryptedText.contains(entry.getKey().toString())) {
                     count++;
                 }
             }
-            LOG.info("ANSWER: " + answer + " " + count + " correct");
+            LOG.info("ANSWER:" + count + " correct" + "\t" + answer);
 
             if (answer.equals(plainText)) {
                 correct++;
