@@ -56,7 +56,8 @@ public class Pattern {
      *            Text to scan
      * @return Map with frequencies
      */
-    public Map<IntArrayWrapper, Double> calcPatternFrequencies(final String text) {
+    private Map<IntArrayWrapper, Double> calcPatternFrequencies(
+            final String text) {
         final Map<IntArrayWrapper, Double> patternFreq = new HashMap<IntArrayWrapper, Double>();
 
         for (int i = 0; i < text.length() - 4; i++) {
@@ -106,7 +107,7 @@ public class Pattern {
      *            Polybius square
      * @return Fitness of this arrangement
      */
-    public int patternFitness(final List<List<Character>> col,
+    private int patternFitness(final List<List<Character>> col,
             final List<List<Character>> row) {
 
         final Map<IntArrayWrapper, Double> patFreq = calcPatternFrequencies(PolybiusSquare
@@ -126,7 +127,7 @@ public class Pattern {
      *            table of second text
      * @return Dissimilarity between two patterns expressed as an integer
      */
-    public int patternDissimilarity(final Map<IntArrayWrapper, Double> freqA,
+    private int patternDissimilarity(final Map<IntArrayWrapper, Double> freqA,
             final Map<IntArrayWrapper, Double> freqB) {
         int score = 0;
 
@@ -199,7 +200,7 @@ public class Pattern {
      * @throws IOException
      *             Error while reading from file
      */
-    public void readPatternTetagrams(final String filename) throws IOException {
+    private void readPatternTetagrams(final String filename) throws IOException {
         final InputStream file = new FileInputStream(filename);
         final DataInputStream in = new DataInputStream(file);
 

@@ -24,7 +24,7 @@ public class PolybiusSquare {
      * @author Ben Ruijl
      * 
      */
-    private class Entry {
+    private static class Entry {
         private final int col;
         private final int row;
 
@@ -44,6 +44,7 @@ public class PolybiusSquare {
 
     /** Values in the square. */
     private final char[][] square = new char[6][6];
+
     /**
      * The inverse of the square: a map from a character in the square to the
      * row and column index.
@@ -57,7 +58,7 @@ public class PolybiusSquare {
      *            Key in <code>keyName</code>
      * @return Index
      */
-    static int keyNameToIndex(final char key) {
+    private static int keyNameToIndex(final char key) {
         switch (key) {
         case 'A':
             return 0;
