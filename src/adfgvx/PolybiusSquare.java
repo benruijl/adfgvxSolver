@@ -25,30 +25,30 @@ public class PolybiusSquare {
      * 
      */
     private class Entry {
-	private final int col;
-	private final int row;
+        private final int col;
+        private final int row;
 
-	public Entry(int col, int row) {
-	    this.col = col;
-	    this.row = row;
-	}
+        public Entry(final int col, final int row) {
+            this.col = col;
+            this.row = row;
+        }
 
-	public int getCol() {
-	    return col;
-	}
+        public int getCol() {
+            return col;
+        }
 
-	public int getRow() {
-	    return row;
-	}
+        public int getRow() {
+            return row;
+        }
     }
 
     /** Values in the square. */
-    private char[][] square = new char[6][6];
+    private final char[][] square = new char[6][6];
     /**
      * The inverse of the square: a map from a character in the square to the
      * row and column index.
      */
-    private Map<Character, Entry> inverseSquare;
+    private final Map<Character, Entry> inverseSquare;
 
     /**
      * Maps a key name (label) to an index.
@@ -57,23 +57,23 @@ public class PolybiusSquare {
      *            Key in <code>keyName</code>
      * @return Index
      */
-    static int keyNameToIndex(char key) {
-	switch (key) {
-	case 'A':
-	    return 0;
-	case 'D':
-	    return 1;
-	case 'F':
-	    return 2;
-	case 'G':
-	    return 3;
-	case 'V':
-	    return 4;
-	case 'X':
-	    return 5;
-	default:
-	    return -1;
-	}
+    static int keyNameToIndex(final char key) {
+        switch (key) {
+        case 'A':
+            return 0;
+        case 'D':
+            return 1;
+        case 'F':
+            return 2;
+        case 'G':
+            return 3;
+        case 'V':
+            return 4;
+        case 'X':
+            return 5;
+        default:
+            return -1;
+        }
     }
 
     /**
@@ -82,13 +82,13 @@ public class PolybiusSquare {
      * @param squareData
      *            Characters in the grid, specified row-wise.
      */
-    public PolybiusSquare(List<Character> squareData) {
-	inverseSquare = new HashMap<Character, Entry>();
+    public PolybiusSquare(final List<Character> squareData) {
+        inverseSquare = new HashMap<Character, Entry>();
 
-	for (int i = 0; i < squareData.size(); i++) {
-	    square[i / 6][i % 6] = squareData.get(i);
-	    inverseSquare.put(squareData.get(i), new Entry(i / 6, i % 6));
-	}
+        for (int i = 0; i < squareData.size(); i++) {
+            square[i / 6][i % 6] = squareData.get(i);
+            inverseSquare.put(squareData.get(i), new Entry(i / 6, i % 6));
+        }
 
     }
 
@@ -103,20 +103,20 @@ public class PolybiusSquare {
      *            List of column key names
      * @return Unfractioned text
      */
-    public static String unFraction(List<List<Character>> row,
-	    List<List<Character>> col) {
-	StringBuffer buffer = new StringBuffer();
+    public static String unFraction(final List<List<Character>> row,
+            final List<List<Character>> col) {
+        final StringBuffer buffer = new StringBuffer();
 
-	/* Generate text from cols and rows */
-	for (int j = 0; j < row.get(0).size(); j++) { // which row
-	    for (int i = 0; i < row.size(); i++) { // which col
-		int index = keyNameToIndex(row.get(i).get(j)) * 6
-			+ keyNameToIndex(col.get(i).get(j));
-		buffer.append(Encryption.plainAlphabet.charAt(index));
-	    }
-	}
+        /* Generate text from cols and rows */
+        for (int j = 0; j < row.get(0).size(); j++) { // which row
+            for (int i = 0; i < row.size(); i++) { // which col
+                final int index = keyNameToIndex(row.get(i).get(j)) * 6
+                        + keyNameToIndex(col.get(i).get(j));
+                buffer.append(Encryption.plainAlphabet.charAt(index));
+            }
+        }
 
-	return buffer.toString();
+        return buffer.toString();
     }
 
     /**
@@ -127,15 +127,15 @@ public class PolybiusSquare {
      * @see Encryption#plainAlphabet
      */
     public static PolybiusSquare generateRandomSquare() {
-	List<Character> squareData = new ArrayList<Character>();
+        final List<Character> squareData = new ArrayList<Character>();
 
-	for (int i = 0; i < Encryption.plainAlphabet.length(); i++) {
-	    squareData.add(Encryption.plainAlphabet.charAt(i));
-	}
+        for (int i = 0; i < Encryption.plainAlphabet.length(); i++) {
+            squareData.add(Encryption.plainAlphabet.charAt(i));
+        }
 
-	Collections.shuffle(squareData);
+        Collections.shuffle(squareData);
 
-	return new PolybiusSquare(squareData);
+        return new PolybiusSquare(squareData);
     }
 
     /**
@@ -145,16 +145,16 @@ public class PolybiusSquare {
      *            Input text
      * @return Fractioned text
      */
-    public String fraction(String input) {
-	StringBuffer result = new StringBuffer();
+    public String fraction(final String input) {
+        final StringBuffer result = new StringBuffer();
 
-	for (int i = 0; i < input.length(); i++) {
-	    Entry entry = inverseSquare.get(input.charAt(i));
-	    result.append(keyName[entry.getRow()]);
-	    result.append(keyName[entry.getCol()]);
-	}
+        for (int i = 0; i < input.length(); i++) {
+            final Entry entry = inverseSquare.get(input.charAt(i));
+            result.append(keyName[entry.getRow()]);
+            result.append(keyName[entry.getCol()]);
+        }
 
-	return result.toString();
+        return result.toString();
     }
 
     /**
@@ -162,16 +162,16 @@ public class PolybiusSquare {
      */
     @Override
     public String toString() {
-	StringBuffer result = new StringBuffer("\n");
+        final StringBuffer result = new StringBuffer("\n");
 
-	for (int i = 0; i < 6; i++) {
-	    for (int j = 0; j < 6; j++) {
-		result.append(square[i][j] + " ");
-	    }
+        for (int i = 0; i < 6; i++) {
+            for (int j = 0; j < 6; j++) {
+                result.append(square[i][j] + " ");
+            }
 
-	    result.append("\n");
-	}
+            result.append("\n");
+        }
 
-	return result.toString();
+        return result.toString();
     }
 }

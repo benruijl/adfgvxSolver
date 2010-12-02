@@ -18,9 +18,9 @@ public class Utils {
      *            Value
      * @return Return e^x
      */
-    public static double exp(double x) {
-	final long tmp = (long) (1512775 * x + (1072693248 - 60801));
-	return Double.longBitsToDouble(tmp << 32);
+    public static double exp(final double x) {
+        final long tmp = (long) (1512775 * x + (1072693248 - 60801));
+        return Double.longBitsToDouble(tmp << 32);
     }
 
     /**
@@ -34,13 +34,13 @@ public class Utils {
      *            Map to invert
      * @return Inverted map
      */
-    public static <A, B> Map<A, B> invert(Map<B, A> map) {
-	Map<A, B> result = new HashMap<A, B>();
+    public static <A, B> Map<A, B> invert(final Map<B, A> map) {
+        final Map<A, B> result = new HashMap<A, B>();
 
-	for (Entry<B, A> entry : map.entrySet()) {
-	    result.put(entry.getValue(), entry.getKey());
-	}
+        for (final Entry<B, A> entry : map.entrySet()) {
+            result.put(entry.getValue(), entry.getKey());
+        }
 
-	return result;
+        return result;
     }
 }

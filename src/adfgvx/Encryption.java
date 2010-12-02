@@ -27,17 +27,17 @@ public class Encryption {
      *            Alphabet from cipher text to plain text
      * @return Transcribed text
      */
-    public static String transcribeCipherText(String cipherText,
-	    Map<Character, Character> alphabet) {
-	/* Transcribe ciphertext */
-	char[] newTextArray = cipherText.toCharArray();
-	for (int i = 0; i < newTextArray.length; i++) {
-	    newTextArray[i] = alphabet.get(newTextArray[i]);
-	}
+    public static String transcribeCipherText(final String cipherText,
+            final Map<Character, Character> alphabet) {
+        /* Transcribe ciphertext */
+        final char[] newTextArray = cipherText.toCharArray();
+        for (int i = 0; i < newTextArray.length; i++) {
+            newTextArray[i] = alphabet.get(newTextArray[i]);
+        }
 
-	String newText = new String(newTextArray);
+        final String newText = new String(newTextArray);
 
-	return newText;
+        return newText;
     }
 
     /**
@@ -47,19 +47,19 @@ public class Encryption {
      * @return Random alphabet
      */
     public static Map<Character, Character> randomAlphabet() {
-	List<Character> alphabet = new ArrayList<Character>();
+        final List<Character> alphabet = new ArrayList<Character>();
 
-	for (int i = 0; i < plainAlphabet.length(); i++) {
-	    alphabet.add(plainAlphabet.charAt(i));
-	}
+        for (int i = 0; i < plainAlphabet.length(); i++) {
+            alphabet.add(plainAlphabet.charAt(i));
+        }
 
-	Collections.shuffle(alphabet);
+        Collections.shuffle(alphabet);
 
-	Map<Character, Character> alphabetMap = new LinkedHashMap<Character, Character>();
-	for (int i = 0; i < plainAlphabet.length(); i++) {
-	    alphabetMap.put(plainAlphabet.charAt(i), alphabet.get(i));
-	}
+        final Map<Character, Character> alphabetMap = new LinkedHashMap<Character, Character>();
+        for (int i = 0; i < plainAlphabet.length(); i++) {
+            alphabetMap.put(plainAlphabet.charAt(i), alphabet.get(i));
+        }
 
-	return alphabetMap;
+        return alphabetMap;
     }
 }

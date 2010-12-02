@@ -34,7 +34,7 @@ public class Pattern {
     private static final Logger LOG = Logger.getLogger(Pattern.class);
 
     /** Pattern table of a large reference text. */
-    private Map<IntArrayWrapper, Double> patternFreq;
+    private final Map<IntArrayWrapper, Double> patternFreq;
 
     /**
      * Reads a pattern table from a reference file.
@@ -45,8 +45,8 @@ public class Pattern {
      *             Exception when problems occur with reading the reference file
      */
     public Pattern(final String filename) throws IOException {
-	patternFreq = new HashMap<IntArrayWrapper, Double>();
-	readPatternTetagrams(filename);
+        patternFreq = new HashMap<IntArrayWrapper, Double>();
+        readPatternTetagrams(filename);
     }
 
     /**
@@ -56,41 +56,41 @@ public class Pattern {
      *            Text to scan
      * @return Map with frequencies
      */
-    public Map<IntArrayWrapper, Double> calcPatternFrequencies(String text) {
-	Map<IntArrayWrapper, Double> patternFreq = new HashMap<IntArrayWrapper, Double>();
+    public Map<IntArrayWrapper, Double> calcPatternFrequencies(final String text) {
+        final Map<IntArrayWrapper, Double> patternFreq = new HashMap<IntArrayWrapper, Double>();
 
-	for (int i = 0; i < text.length() - 4; i++) {
-	    int[] initData = { 0, 1, 2, 3 };
-	    IntArrayWrapper pat = new IntArrayWrapper(initData);
+        for (int i = 0; i < text.length() - 4; i++) {
+            final int[] initData = { 0, 1, 2, 3 };
+            final IntArrayWrapper pat = new IntArrayWrapper(initData);
 
-	    int highest = 0;
-	    for (int j = 0; j < 4; j++) {
-		boolean found = false;
+            int highest = 0;
+            for (int j = 0; j < 4; j++) {
+                boolean found = false;
 
-		for (int k = 0; k < j; k++) {
-		    if (text.charAt(i + j) == text.charAt(i + k)) {
-			pat.getData()[j] = k;
-			found = true;
-			break;
-		    }
-		}
+                for (int k = 0; k < j; k++) {
+                    if (text.charAt(i + j) == text.charAt(i + k)) {
+                        pat.getData()[j] = k;
+                        found = true;
+                        break;
+                    }
+                }
 
-		if (!found) {
-		    highest++;
-		    pat.getData()[j] = highest;
-		}
-	    }
+                if (!found) {
+                    highest++;
+                    pat.getData()[j] = highest;
+                }
+            }
 
-	    Double num = patternFreq.get(pat);
+            Double num = patternFreq.get(pat);
 
-	    if (num == null) {
-		num = 0.0;
-	    }
+            if (num == null) {
+                num = 0.0;
+            }
 
-	    patternFreq.put(pat, num + 1.0f / (text.length() - 3));
-	}
+            patternFreq.put(pat, num + 1.0f / (text.length() - 3));
+        }
 
-	return patternFreq;
+        return patternFreq;
     }
 
     /**
@@ -106,14 +106,14 @@ public class Pattern {
      *            Polybius square
      * @return Fitness of this arrangement
      */
-    public int patternFitness(List<List<Character>> col,
-	    List<List<Character>> row) {
+    public int patternFitness(final List<List<Character>> col,
+            final List<List<Character>> row) {
 
-	Map<IntArrayWrapper, Double> patFreq = calcPatternFrequencies(PolybiusSquare
-		.unFraction(row, col));
+        final Map<IntArrayWrapper, Double> patFreq = calcPatternFrequencies(PolybiusSquare
+                .unFraction(row, col));
 
-	return patternDissimilarity(patternFreq, patFreq); // compare the
-	// frequencies
+        return patternDissimilarity(patternFreq, patFreq); // compare the
+        // frequencies
     }
 
     /**
@@ -126,29 +126,29 @@ public class Pattern {
      *            table of second text
      * @return Dissimilarity between two patterns expressed as an integer
      */
-    public int patternDissimilarity(Map<IntArrayWrapper, Double> freqA,
-	    Map<IntArrayWrapper, Double> freqB) {
-	int score = 0;
+    public int patternDissimilarity(final Map<IntArrayWrapper, Double> freqA,
+            final Map<IntArrayWrapper, Double> freqB) {
+        int score = 0;
 
-	for (IntArrayWrapper key : freqB.keySet()) {
-	    Double first = freqA.get(key);
-	    Double second = freqB.get(key);
+        for (final IntArrayWrapper key : freqB.keySet()) {
+            Double first = freqA.get(key);
+            final Double second = freqB.get(key);
 
-	    if (first == null) {
-		first = 0.0;
-	    }
+            if (first == null) {
+                first = 0.0;
+            }
 
-	    score += (first - second) * (first - second);
+            score += (first - second) * (first - second);
 
-	}
+        }
 
-	return score;
+        return score;
     }
 
     /**
      * Tries to find the optimal arrangement of columns and rows so that the
-     * pattern frequencies of the resulting text are as close to the reference text
-     * as possible.
+     * pattern frequencies of the resulting text are as close to the reference
+     * text as possible.
      * 
      * @param col
      *            List of transposition grid columns that map to columns in the
@@ -157,37 +157,37 @@ public class Pattern {
      *            List of transposition grid columns that map to rows in the
      *            Polybius square
      */
-    public void findOptimalPatternDistribution(List<List<Character>> col,
-	    List<List<Character>> row) {
-	for (int i = 0; i < col.size() - 1; i++) {
-	    for (int j = i; j < col.size(); j++) {
-		int oldScore = patternFitness(col, row);
-		Collections.swap(col, i, j);
+    public void findOptimalPatternDistribution(final List<List<Character>> col,
+            final List<List<Character>> row) {
+        for (int i = 0; i < col.size() - 1; i++) {
+            for (int j = i; j < col.size(); j++) {
+                final int oldScore = patternFitness(col, row);
+                Collections.swap(col, i, j);
 
-		int newScore = patternFitness(col, row);
+                final int newScore = patternFitness(col, row);
 
-		if (newScore < oldScore) {
-		    findOptimalPatternDistribution(col, row);
-		} else {
-		    Collections.swap(col, i, j); // swap back
-		}
-	    }
-	}
+                if (newScore < oldScore) {
+                    findOptimalPatternDistribution(col, row);
+                } else {
+                    Collections.swap(col, i, j); // swap back
+                }
+            }
+        }
 
-	for (int i = 0; i < row.size() - 1; i++) {
-	    for (int j = i; j < row.size(); j++) {
-		int oldScore = patternFitness(col, row);
-		Collections.swap(row, i, j);
+        for (int i = 0; i < row.size() - 1; i++) {
+            for (int j = i; j < row.size(); j++) {
+                final int oldScore = patternFitness(col, row);
+                Collections.swap(row, i, j);
 
-		int newScore = patternFitness(col, row);
+                final int newScore = patternFitness(col, row);
 
-		if (newScore < oldScore) {
-		    findOptimalPatternDistribution(col, row);
-		} else {
-		    Collections.swap(row, i, j); // swap back
-		}
-	    }
-	}
+                if (newScore < oldScore) {
+                    findOptimalPatternDistribution(col, row);
+                } else {
+                    Collections.swap(row, i, j); // swap back
+                }
+            }
+        }
 
     }
 
@@ -199,24 +199,24 @@ public class Pattern {
      * @throws IOException
      *             Error while reading from file
      */
-    public void readPatternTetagrams(String filename) throws IOException {
-	InputStream file = new FileInputStream(filename);
-	DataInputStream in = new DataInputStream(file);
+    public void readPatternTetagrams(final String filename) throws IOException {
+        final InputStream file = new FileInputStream(filename);
+        final DataInputStream in = new DataInputStream(file);
 
-	int size = in.readInt();
+        final int size = in.readInt();
 
-	for (int i = 0; i < size; i++) {
-	    int[] tet = new int[4];
-	    for (int j = 0; j < 4; j++) {
-		tet[j] = in.readInt();
-	    }
+        for (int i = 0; i < size; i++) {
+            final int[] tet = new int[4];
+            for (int j = 0; j < 4; j++) {
+                tet[j] = in.readInt();
+            }
 
-	    patternFreq.put(new IntArrayWrapper(tet), in.readDouble());
-	}
+            patternFreq.put(new IntArrayWrapper(tet), in.readDouble());
+        }
 
-	LOG.info("Pattern tetagrams read.");
+        LOG.info("Pattern tetagrams read.");
 
-	in.close();
+        in.close();
     }
 
     /**
@@ -229,27 +229,27 @@ public class Pattern {
      * @throws IOException
      *             Error while writing to a file
      */
-    public void writePattern(String filename, String text) throws IOException {
-	Map<IntArrayWrapper, Double> patTet = calcPatternFrequencies(text);
+    public void writePattern(final String filename, final String text)
+            throws IOException {
+        final Map<IntArrayWrapper, Double> patTet = calcPatternFrequencies(text);
 
-	OutputStream fstream = new FileOutputStream("pat.dat");
-	DataOutputStream out = new DataOutputStream(fstream);
-	out.writeInt(patTet.size());
+        final OutputStream fstream = new FileOutputStream("pat.dat");
+        final DataOutputStream out = new DataOutputStream(fstream);
+        out.writeInt(patTet.size());
 
-	/* Print the map */
-	for (Entry<IntArrayWrapper, Double> entry : patTet.entrySet()) {
-	    for (int i = 0; i < 4; i++) {
-		System.out.print(entry.getKey().getData()[i]);
-		out.writeInt(entry.getKey().getData()[i]);
-	    }
+        /* Print the map */
+        for (final Entry<IntArrayWrapper, Double> entry : patTet.entrySet()) {
+            for (int i = 0; i < 4; i++) {
+                System.out.print(entry.getKey().getData()[i]);
+                out.writeInt(entry.getKey().getData()[i]);
+            }
 
-	    System.out.print(" "
-		    + Math.log(entry.getValue() / (text.length() - 3)) + "\n");
+            System.out.print(" "
+                    + Math.log(entry.getValue() / (text.length() - 3)) + "\n");
 
-	    out.writeDouble(Math.log(entry.getValue()
-		    / (double) (text.length() - 3)));
-	}
+            out.writeDouble(Math.log(entry.getValue() / (text.length() - 3)));
+        }
 
-	out.close();
+        out.close();
     }
 }

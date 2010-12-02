@@ -36,19 +36,19 @@ public class Main {
      * @param tet
      *            Filename of tetgram frequencies
      */
-    public Main(String cipherText, String pat, String tet) {
-	try {
-	    Pattern pattern = new Pattern(pat);
-	    Tetagram tetagram = new Tetagram(tet);
-	    Analysis analysis = new Analysis(pattern, tetagram);
+    public Main(final String cipherText, final String pat, final String tet) {
+        try {
+            final Pattern pattern = new Pattern(pat);
+            final Tetagram tetagram = new Tetagram(tet);
+            final Analysis analysis = new Analysis(pattern, tetagram);
 
-	    String largeText = readCipher(cipherText);
+            final String largeText = readCipher(cipherText);
 
-	    analysis.doAnalysis(largeText); // do analysis
-	    // analysis.doHillclimbTestRun(largeText); // just solve a mono sub
-	} catch (IOException e) {
-	    e.printStackTrace();
-	}
+            analysis.doAnalysis(largeText); // do analysis
+            // analysis.doHillclimbTestRun(largeText); // just solve a mono sub
+        } catch (final IOException e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -59,17 +59,17 @@ public class Main {
      *            Filename
      * @return Stripped text
      */
-    public String readCipher(String filename) {
-	String file;
-	try {
-	    file = new Scanner(new File(filename)).useDelimiter("\\Z").next();
-	    file = file.replaceAll("[^A-Z]", "");
-	    return file;
-	} catch (FileNotFoundException e) {
-	    e.printStackTrace();
-	}
+    public String readCipher(final String filename) {
+        String file;
+        try {
+            file = new Scanner(new File(filename)).useDelimiter("\\Z").next();
+            file = file.replaceAll("[^A-Z]", "");
+            return file;
+        } catch (final FileNotFoundException e) {
+            e.printStackTrace();
+        }
 
-	return null;
+        return null;
     }
 
     /**
@@ -78,40 +78,40 @@ public class Main {
      * @param args
      *            Command line arguments
      */
-    public static void main(String[] args) {
-	BasicConfigurator.configure();
-	LOG.setLevel(Level.INFO);
-	LOG.info("Started");
+    public static void main(final String[] args) {
+        BasicConfigurator.configure();
+        LOG.setLevel(Level.INFO);
+        LOG.info("Started");
 
-	Options options = new Options();
-	options.addOption("v", false, "Be verbose");
-	options.addOption("c", true, "Cipher text");
-	options.addOption("p", true, "Patterns");
-	options.addOption("t", true, "Tetagrams");
-	options.addOption("help", false, "Display help message");
+        final Options options = new Options();
+        options.addOption("v", false, "Be verbose");
+        options.addOption("c", true, "Cipher text");
+        options.addOption("p", true, "Patterns");
+        options.addOption("t", true, "Tetagrams");
+        options.addOption("help", false, "Display help message");
 
-	CommandLineParser parser = new GnuParser();
-	try {
-	    CommandLine cmd = parser.parse(options, args);
+        final CommandLineParser parser = new GnuParser();
+        try {
+            final CommandLine cmd = parser.parse(options, args);
 
-	    if (cmd.hasOption("help")) {
-		HelpFormatter formatter = new HelpFormatter();
-		formatter.printHelp("adfgvSolver", options);
+            if (cmd.hasOption("help")) {
+                final HelpFormatter formatter = new HelpFormatter();
+                formatter.printHelp("adfgvSolver", options);
 
-		return;
-	    }
+                return;
+            }
 
-	    if (cmd.hasOption("c") && cmd.hasOption("p") && cmd.hasOption("t")) {
-		new Main(cmd.getOptionValue("c"), cmd.getOptionValue("p"),
-			cmd.getOptionValue("t"));
-	    } else {
-		LOG.error("Please check input.");
-	    }
+            if (cmd.hasOption("c") && cmd.hasOption("p") && cmd.hasOption("t")) {
+                new Main(cmd.getOptionValue("c"), cmd.getOptionValue("p"),
+                        cmd.getOptionValue("t"));
+            } else {
+                LOG.error("Please check input.");
+            }
 
-	} catch (ParseException e) {
-	    LOG.info("Could not parse arguments. Pass -help for help."
-		    + e.getMessage());
-	}
+        } catch (final ParseException e) {
+            LOG.info("Could not parse arguments. Pass -help for help."
+                    + e.getMessage());
+        }
 
     }
 }

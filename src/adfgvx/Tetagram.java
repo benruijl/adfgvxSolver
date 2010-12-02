@@ -21,7 +21,7 @@ public class Tetagram {
     /** Logger. */
     private static final Logger LOG = Logger.getLogger(Tetagram.class);
     /** Table of log tetagram frequencies. */
-    private Map<String, Double> tetagrams;
+    private final Map<String, Double> tetagrams;
 
     /**
      * Creates an instance of Tetagram, which contains a reference frequency
@@ -32,9 +32,9 @@ public class Tetagram {
      * @throws IOException
      *             Read error
      */
-    public Tetagram(String filename) throws IOException {
-	tetagrams = new HashMap<String, Double>();
-	readTetagrams(filename);
+    public Tetagram(final String filename) throws IOException {
+        tetagrams = new HashMap<String, Double>();
+        readTetagrams(filename);
     }
 
     /**
@@ -45,25 +45,25 @@ public class Tetagram {
      * @throws IOException
      *             Read error
      */
-    public void readTetagrams(String filename) throws IOException {
-	InputStream file = new FileInputStream(filename);
-	DataInputStream in = new DataInputStream(file);
+    public void readTetagrams(final String filename) throws IOException {
+        final InputStream file = new FileInputStream(filename);
+        final DataInputStream in = new DataInputStream(file);
 
-	int size = in.readInt();
+        final int size = in.readInt();
 
-	for (int i = 0; i < size; i++) {
-	    String tet = new String();
-	    for (int j = 0; j < 4; j++) {
-		tet += in.readChar();
-	    }
+        for (int i = 0; i < size; i++) {
+            String tet = new String();
+            for (int j = 0; j < 4; j++) {
+                tet += in.readChar();
+            }
 
-	    Double freq = in.readDouble();
-	    tetagrams.put(tet, freq);
-	}
+            final Double freq = in.readDouble();
+            tetagrams.put(tet, freq);
+        }
 
-	LOG.info("Tetagrams read.");
+        LOG.info("Tetagrams read.");
 
-	in.close();
+        in.close();
     }
 
     /**
@@ -75,51 +75,54 @@ public class Tetagram {
      *            Alphabet map from cipher text to certain solution
      * @return Fitness expressed as a number
      */
-    public double fitness(String cipherText, Map<Character, Character> alphabet) {
-	String newText = Encryption.transcribeCipherText(cipherText, alphabet);
-	Map<String, Integer> cipherTetagrams = new HashMap<String, Integer>();
+    public double fitness(final String cipherText,
+            final Map<Character, Character> alphabet) {
+        final String newText = Encryption.transcribeCipherText(cipherText,
+                alphabet);
+        final Map<String, Integer> cipherTetagrams = new HashMap<String, Integer>();
 
-	// long time = System.nanoTime();
-	for (int i = 0; i < newText.length() - 4; i++) {
-	    String tet = newText.substring(i, i + 4);
+        // long time = System.nanoTime();
+        for (int i = 0; i < newText.length() - 4; i++) {
+            final String tet = newText.substring(i, i + 4);
 
-	    Integer count = cipherTetagrams.get(tet);
-	    if (count != null) {
-		cipherTetagrams.put(tet, count + 1);
-	    } else {
-		cipherTetagrams.put(tet, 1);
-	    }
-	}
-	// LOG.info(System.nanoTime() - time);
+            final Integer count = cipherTetagrams.get(tet);
+            if (count != null) {
+                cipherTetagrams.put(tet, count + 1);
+            } else {
+                cipherTetagrams.put(tet, 1);
+            }
+        }
+        // LOG.info(System.nanoTime() - time);
 
-	double fitness = 0;
-	double sigmaSquared = 4.0;
-	for (Map.Entry<String, Integer> entry : cipherTetagrams.entrySet()) {
-	    double sourceLogFreq = Double.POSITIVE_INFINITY;
+        double fitness = 0;
+        final double sigmaSquared = 4.0;
+        for (final Map.Entry<String, Integer> entry : cipherTetagrams
+                .entrySet()) {
+            double sourceLogFreq = Double.POSITIVE_INFINITY;
 
-	    Double freq = tetagrams.get(entry.getKey());
-	    if (freq != null) {
-		sourceLogFreq = freq;
-	    } else {
-		// continue;
-	    }
+            final Double freq = tetagrams.get(entry.getKey());
+            if (freq != null) {
+                sourceLogFreq = freq;
+            } else {
+                // continue;
+            }
 
-	    Double logFreq = Math.log(entry.getValue()
-		    / (double) (newText.length() - 3));
+            final Double logFreq = Math.log(entry.getValue()
+                    / (double) (newText.length() - 3));
 
-	    /* TODO: check if the factor in front of the exp is required. */
-	    double exponent = -(logFreq - sourceLogFreq)
-		    * (logFreq - sourceLogFreq) / (2.0 * sigmaSquared);
-	    // LOG.info(exponent);
-	    fitness += 1.0 / Math.sqrt(2 * Math.PI * sigmaSquared)
-		    * Utils.exp(exponent);
+            /* TODO: check if the factor in front of the exp is required. */
+            final double exponent = -(logFreq - sourceLogFreq)
+                    * (logFreq - sourceLogFreq) / (2.0 * sigmaSquared);
+            // LOG.info(exponent);
+            fitness += 1.0 / Math.sqrt(2 * Math.PI * sigmaSquared)
+                    * Utils.exp(exponent);
 
-	    // fitness += Math.round(logFreq) == Math.round(sourceLogFreq) ? 1 :
-	    // 0;
-	    // LOG.info(logFreq + " " + sourceLogFreq);
-	    // fitness -= Math.abs(sourceLogFreq - logFreq);
-	}
+            // fitness += Math.round(logFreq) == Math.round(sourceLogFreq) ? 1 :
+            // 0;
+            // LOG.info(logFreq + " " + sourceLogFreq);
+            // fitness -= Math.abs(sourceLogFreq - logFreq);
+        }
 
-	return fitness;
+        return fitness;
     }
 }

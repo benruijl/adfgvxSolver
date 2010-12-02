@@ -27,23 +27,23 @@ public class Grid {
      * @param columnCount
      *            Amount of columns
      */
-    public Grid(int columnCount) {
-	dimension = columnCount;
+    public Grid(final int columnCount) {
+        dimension = columnCount;
 
-	grid = new ArrayList<List<Character>>(columnCount);
+        grid = new ArrayList<List<Character>>(columnCount);
 
-	for (int i = 0; i < columnCount; i++) {
-	    grid.add(new ArrayList<Character>());
-	}
+        for (int i = 0; i < columnCount; i++) {
+            grid.add(new ArrayList<Character>());
+        }
     }
 
     /**
      * Clears the grid.
      */
     public void clear() {
-	for (int i = 0; i < dimension; i++) {
-	    grid.clear();
-	}
+        for (int i = 0; i < dimension; i++) {
+            grid.clear();
+        }
     }
 
     /**
@@ -52,10 +52,10 @@ public class Grid {
      * @param data
      *            Text
      */
-    public void add(String data) {
-	for (int i = 0; i < data.length(); i++) {
-	    grid.get(i % dimension).add(data.charAt(i));
-	}
+    public void add(final String data) {
+        for (int i = 0; i < data.length(); i++) {
+            grid.get(i % dimension).add(data.charAt(i));
+        }
     }
 
     /**
@@ -64,15 +64,15 @@ public class Grid {
      * @param key
      *            Transposition key
      */
-    public void switchColumns(List<Integer> key) {
-	List<List<Character>> transposedGrid = new ArrayList<List<Character>>(
-		dimension);
+    public void switchColumns(final List<Integer> key) {
+        final List<List<Character>> transposedGrid = new ArrayList<List<Character>>(
+                dimension);
 
-	for (int i = 0; i < key.size(); i++) {
-	    transposedGrid.add(grid.get(key.get(i)));
-	}
+        for (int i = 0; i < key.size(); i++) {
+            transposedGrid.add(grid.get(key.get(i)));
+        }
 
-	grid = transposedGrid;
+        grid = transposedGrid;
     }
 
     /**
@@ -82,16 +82,16 @@ public class Grid {
      *            Key length
      * @return Random key
      */
-    public static List<Integer> generateRandomKey(int length) {
-	List<Integer> key = new ArrayList<Integer>(length);
+    public static List<Integer> generateRandomKey(final int length) {
+        final List<Integer> key = new ArrayList<Integer>(length);
 
-	for (int i = 0; i < length; i++) {
-	    key.add(i);
-	}
+        for (int i = 0; i < length; i++) {
+            key.add(i);
+        }
 
-	Collections.shuffle(key);
+        Collections.shuffle(key);
 
-	return key;
+        return key;
     }
 
     /**
@@ -101,8 +101,8 @@ public class Grid {
      *            Index of column
      * @return List of characters in the column
      */
-    public List<Character> getColumn(int index) {
-	return grid.get(index);
+    public List<Character> getColumn(final int index) {
+        return grid.get(index);
     }
 
     /**
@@ -111,7 +111,7 @@ public class Grid {
      * @return Grid
      */
     public List<List<Character>> getGrid() {
-	return grid;
+        return grid;
     }
 
     /**
@@ -120,21 +120,21 @@ public class Grid {
      * @return Encoded text
      */
     public String encode() {
-	StringBuffer result = new StringBuffer();
+        final StringBuffer result = new StringBuffer();
 
-	int size = grid.get(0).size();
+        final int size = grid.get(0).size();
 
-	for (int j = 0; j < size; j++) {
-	    for (int i = 0; i < dimension; i++) {
-		if (size != grid.get(i).size()) {
-		    LOG.fatal("Grid data is not rectangular.");
-		    break;
-		}
+        for (int j = 0; j < size; j++) {
+            for (int i = 0; i < dimension; i++) {
+                if (size != grid.get(i).size()) {
+                    LOG.fatal("Grid data is not rectangular.");
+                    break;
+                }
 
-		result.append(grid.get(i).get(j));
-	    }
-	}
+                result.append(grid.get(i).get(j));
+            }
+        }
 
-	return result.toString();
+        return result.toString();
     }
 }
