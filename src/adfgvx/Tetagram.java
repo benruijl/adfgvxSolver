@@ -9,16 +9,42 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+/**
+ * This class delivers functions to solve a monoalphabetic substitution cipher.
+ * It uses log frequencies of tetagrams to determine how fit a solution is. The
+ * fitness function can be used in hill-climbing.
+ * 
+ * @author Ben Ruijl
+ * 
+ */
 public class Tetagram {
     /** Logger. */
     private static final Logger LOG = Logger.getLogger(Tetagram.class);
+    /** Table of log tetagram frequencies. */
     private Map<String, Double> tetagrams;
 
+    /**
+     * Creates an instance of Tetagram, which contains a reference frequency
+     * table.
+     * 
+     * @param filename
+     *            Filename of the reference frequency table
+     * @throws IOException
+     *             Read error
+     */
     public Tetagram(String filename) throws IOException {
 	tetagrams = new HashMap<String, Double>();
 	readTetagrams(filename);
     }
 
+    /**
+     * Reads a log frequency table from a reference text.
+     * 
+     * @param filename
+     *            Filename of the source text
+     * @throws IOException
+     *             Read error
+     */
     public void readTetagrams(String filename) throws IOException {
 	InputStream file = new FileInputStream(filename);
 	DataInputStream in = new DataInputStream(file);
@@ -39,9 +65,18 @@ public class Tetagram {
 
 	in.close();
     }
-    
+
+    /**
+     * Calculates the fitness of a certain substitution of text.
+     * 
+     * @param cipherText
+     *            Cipher text
+     * @param alphabet
+     *            Alphabet map from cipher text to certain solution
+     * @return Fitness expressed as a number
+     */
     public double fitness(String cipherText, Map<Character, Character> alphabet) {
-	String newText = Encryption.transscribeCipherText(cipherText, alphabet);
+	String newText = Encryption.transcribeCipherText(cipherText, alphabet);
 	Map<String, Integer> cipherTetagrams = new HashMap<String, Integer>();
 
 	// long time = System.nanoTime();

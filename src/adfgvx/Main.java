@@ -15,27 +15,50 @@ import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+/**
+ * This class takes care of the basic setup of the application, like scanning
+ * the command line parameters and initiating the analysis.
+ * 
+ * @author Ben Ruijl
+ * 
+ */
 public class Main {
     /** Logger. */
     private static final Logger LOG = Logger.getLogger(Main.class);
 
+    /**
+     * Creates the main application.
+     * 
+     * @param cipherText
+     *            Cipher text / source file
+     * @param pat
+     *            Filename of pattern frequencies
+     * @param tet
+     *            Filename of tetgram frequencies
+     */
     public Main(String cipherText, String pat, String tet) {
 	try {
 	    Pattern pattern = new Pattern(pat);
 	    Tetagram tetagram = new Tetagram(tet);
 	    Analysis analysis = new Analysis(pattern, tetagram);
-	    
+
 	    String largeText = readCipher(cipherText);
-	    
-	    //analysis.doAnalysis(largeText);
-	    analysis.doHillclimbTestRun(largeText);
+
+	    analysis.doAnalysis(largeText); // do analysis
+	    // analysis.doHillclimbTestRun(largeText); // just solve a mono sub
 	} catch (IOException e) {
 	    e.printStackTrace();
 	}
 
-	
     }
 
+    /**
+     * Strips a text from all non-uppercase characters.
+     * 
+     * @param filename
+     *            Filename
+     * @return Stripped text
+     */
     public String readCipher(String filename) {
 	String file;
 	try {
@@ -49,6 +72,12 @@ public class Main {
 	return null;
     }
 
+    /**
+     * Start of the application.
+     * 
+     * @param args
+     *            Command line arguments
+     */
     public static void main(String[] args) {
 	BasicConfigurator.configure();
 	LOG.setLevel(Level.INFO);

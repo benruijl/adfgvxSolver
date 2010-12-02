@@ -15,18 +15,49 @@ import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 
+/**
+ * This class provides functions to find the optimal arrangement of columns in
+ * the transposition grid. Hopefully, this will solve the columnar
+ * transposition. Before using these functions, the columns that map to
+ * columns/rows in the Polybius square have to be identified,
+ * 
+ * To find the optimal arrangement, hillclimbing is performed. The fitness
+ * function is a comparison of log pattern tetagram frequencies of the cipher
+ * text to that of a large reference text.
+ * 
+ * 
+ * @author Ben Ruijl
+ * 
+ */
 public class Pattern {
     /** Logger. */
     private static final Logger LOG = Logger.getLogger(Pattern.class);
-    private Map<IntArrayWrapper, Float> patternFreq;
-    
+
+    /** Pattern table of a large reference text. */
+    private Map<IntArrayWrapper, Double> patternFreq;
+
+    /**
+     * Reads a pattern table from a reference file.
+     * 
+     * @param filename
+     *            Filename of the reference table
+     * @throws IOException
+     *             Exception when problems occur with reading the reference file
+     */
     public Pattern(final String filename) throws IOException {
-	patternFreq = new HashMap<IntArrayWrapper, Float>();
+	patternFreq = new HashMap<IntArrayWrapper, Double>();
 	readPatternTetagrams(filename);
     }
 
-    public Map<IntArrayWrapper, Float> calcPatternFreq(String text) {
-	Map<IntArrayWrapper, Float> patternFreq = new HashMap<IntArrayWrapper, Float>();
+    /**
+     * Calculates the frequency table of tetagrams in a given text.
+     * 
+     * @param text
+     *            Text to scan
+     * @return Map with frequencies
+     */
+    public Map<IntArrayWrapper, Double> calcPatternFrequencies(String text) {
+	Map<IntArrayWrapper, Double> patternFreq = new HashMap<IntArrayWrapper, Double>();
 
 	for (int i = 0; i < text.length() - 4; i++) {
 	    int[] initData = { 0, 1, 2, 3 };
@@ -50,10 +81,10 @@ public class Pattern {
 		}
 	    }
 
-	    Float num = patternFreq.get(pat);
+	    Double num = patternFreq.get(pat);
 
 	    if (num == null) {
-		num = 0.0f;
+		num = 0.0;
 	    }
 
 	    patternFreq.put(pat, num + 1.0f / (text.length() - 3));
@@ -61,27 +92,50 @@ public class Pattern {
 
 	return patternFreq;
     }
-    
+
+    /**
+     * Calculates the fitness of this combination of rows and columns by
+     * reconstructing the text and comparing the pattern tetagram frequencies to
+     * those of a large reference text.
+     * 
+     * @param col
+     *            List of transposition grid columns that map to columns in the
+     *            Polybius square
+     * @param row
+     *            List of transposition grid columns that map to columns in the
+     *            Polybius square
+     * @return Fitness of this arrangement
+     */
     public int patternFitness(List<List<Character>> col,
 	    List<List<Character>> row) {
 
-	Map<IntArrayWrapper, Float> patFreq = calcPatternFreq(PolybiusSquare.mapBigramToMonogram(
-		row, col));
+	Map<IntArrayWrapper, Double> patFreq = calcPatternFrequencies(PolybiusSquare
+		.unFraction(row, col));
 
-	return patternSimilarity(patternFreq, patFreq); // compare the
+	return patternDissimilarity(patternFreq, patFreq); // compare the
 	// frequencies
     }
 
-    public int patternSimilarity(Map<IntArrayWrapper, Float> a,
-	    Map<IntArrayWrapper, Float> b) {
+    /**
+     * Calculates how dissimilar two patterns are. A lower value means a
+     * <b>higher</b> similarity.
+     * 
+     * @param freqA
+     *            Frequency table of first text
+     * @param freqBFrequency
+     *            table of second text
+     * @return Dissimilarity between two patterns expressed as an integer
+     */
+    public int patternDissimilarity(Map<IntArrayWrapper, Double> freqA,
+	    Map<IntArrayWrapper, Double> freqB) {
 	int score = 0;
 
-	for (IntArrayWrapper key : b.keySet()) {
-	    Float first = a.get(key);
-	    Float second = b.get(key);
+	for (IntArrayWrapper key : freqB.keySet()) {
+	    Double first = freqA.get(key);
+	    Double second = freqB.get(key);
 
 	    if (first == null) {
-		first = 0.0f;
+		first = 0.0;
 	    }
 
 	    score += (first - second) * (first - second);
@@ -90,7 +144,19 @@ public class Pattern {
 
 	return score;
     }
-    
+
+    /**
+     * Tries to find the optimal arrangement of columns and rows so that the
+     * pattern frequencies of the resulting text are as close to the reference text
+     * as possible.
+     * 
+     * @param col
+     *            List of transposition grid columns that map to columns in the
+     *            Polybius square
+     * @param row
+     *            List of transposition grid columns that map to rows in the
+     *            Polybius square
+     */
     public void findOptimalPatternDistribution(List<List<Character>> col,
 	    List<List<Character>> row) {
 	for (int i = 0; i < col.size() - 1; i++) {
@@ -125,6 +191,14 @@ public class Pattern {
 
     }
 
+    /**
+     * Reads the log pattern tetagram frequencies from a file.
+     * 
+     * @param filename
+     *            Filename
+     * @throws IOException
+     *             Error while reading from file
+     */
     public void readPatternTetagrams(String filename) throws IOException {
 	InputStream file = new FileInputStream(filename);
 	DataInputStream in = new DataInputStream(file);
@@ -137,8 +211,7 @@ public class Pattern {
 		tet[j] = in.readInt();
 	    }
 
-	    Float freq = (float) in.readDouble();
-	    patternFreq.put(new IntArrayWrapper(tet), freq);
+	    patternFreq.put(new IntArrayWrapper(tet), in.readDouble());
 	}
 
 	LOG.info("Pattern tetagrams read.");
@@ -146,23 +219,32 @@ public class Pattern {
 	in.close();
     }
 
-    public void writePattern(String text) throws IOException {
-	Map<IntArrayWrapper, Float> patTet = calcPatternFreq(text);
+    /**
+     * Writes the pattern table to a file.
+     * 
+     * @param filename
+     *            Name of output file
+     * @param text
+     *            Text to calculate log tetagram pattern frequencies from
+     * @throws IOException
+     *             Error while writing to a file
+     */
+    public void writePattern(String filename, String text) throws IOException {
+	Map<IntArrayWrapper, Double> patTet = calcPatternFrequencies(text);
 
 	OutputStream fstream = new FileOutputStream("pat.dat");
 	DataOutputStream out = new DataOutputStream(fstream);
 	out.writeInt(patTet.size());
 
 	/* Print the map */
-	for (Entry<IntArrayWrapper, Float> entry : patTet.entrySet()) {
+	for (Entry<IntArrayWrapper, Double> entry : patTet.entrySet()) {
 	    for (int i = 0; i < 4; i++) {
 		System.out.print(entry.getKey().getData()[i]);
 		out.writeInt(entry.getKey().getData()[i]);
 	    }
 
 	    System.out.print(" "
-		    + Math.log(entry.getValue() / (text.length() - 3))
-		    + "\n");
+		    + Math.log(entry.getValue() / (text.length() - 3)) + "\n");
 
 	    out.writeDouble(Math.log(entry.getValue()
 		    / (double) (text.length() - 3)));

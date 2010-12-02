@@ -11,16 +11,39 @@ import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 
+/**
+ * This class does all the analysis. It uses various algorithms to solve the
+ * ADFGVX cipher. Some crucial decryption phases are processed in dedicated
+ * classes.
+ * 
+ * @author Ben Ruijl
+ * 
+ * @see RowIdentifier
+ * @see Pattern
+ * @see Tetagram
+ */
 public class Analysis {
     /** Logger. */
     private static final Logger LOG = Logger.getLogger(Analysis.class);
 
+    /** Random number generator. */
     private final Random random;
+    /** Pattern solver. */
     private final Pattern pattern;
+    /** Tetagram solver. */
     private final Tetagram tetagram;
 
+    /** Number of correct decryptions. */
     private int correctAnalysis = 0;
 
+    /**
+     * Creates a new crypto analyzer.
+     * 
+     * @param pattern
+     *            Pattern solver
+     * @param tetagram
+     *            Tetagram solver
+     */
     public Analysis(Pattern pattern, Tetagram tetagram) {
 	this.pattern = pattern;
 	this.tetagram = tetagram;
@@ -28,6 +51,14 @@ public class Analysis {
 	random = new Random();
     }
 
+    /**
+     * Does a full analysis. This functions picks a random string from a text,
+     * generates a random square and key and tries to decrypt the string. At
+     * every step, it checks if the decryption is still correct.
+     * 
+     * @param text
+     *            Source text
+     */
     public void doAnalysis(String text) {
 	PolybiusSquare square = PolybiusSquare.generateRandomSquare();
 	LOG.debug(square);
@@ -39,17 +70,16 @@ public class Analysis {
 
 	// Shrink ciphertext. It should be a multiple of the key length
 	int timesKeyLength = 200;
-	int start = random.nextInt(text.length() - keyLength
-		* timesKeyLength);
+	int start = random.nextInt(text.length() - keyLength * timesKeyLength);
 	String cipherTextPiece = text.substring(start, start + keyLength
 		* timesKeyLength);
 	LOG.info("Plain text: " + cipherTextPiece);
 
-	String fractionedText = square.encode(cipherTextPiece);
+	String fractionedText = square.fraction(cipherTextPiece);
 	Grid grid = new Grid(keyLength);
 	grid.add(fractionedText);
 
-	grid.transpose(key);
+	grid.switchColumns(key);
 
 	String encryptedText = grid.encode();
 
@@ -95,7 +125,7 @@ public class Analysis {
 	    }
 	}
 
-	RowIdentifier.findOptimalDistribution(col, row);
+	RowIdentifier.findOptimalGrouping(col, row);
 	LOG.info(col);
 	LOG.info(row);
 
@@ -171,14 +201,13 @@ public class Analysis {
 
 	if (Math.max(correct, correctTrans) == key.size()) {
 	    // transposition grid is correct, now do mono sub solving
-	    String monoSubText = PolybiusSquare.mapBigramToMonogram(charRow,
-		    charCol);
+	    String monoSubText = PolybiusSquare.unFraction(charRow, charCol);
 
 	    float fitness = 0;
 	    Map<Character, Character> bestAlphabet = new HashMap<Character, Character>();
 	    for (int j = 0; j < 8; j++) {
-		Map<Character, Character> newAlphabet = hillClimb(
-			monoSubText, Encryption.randomAlphabet());
+		Map<Character, Character> newAlphabet = hillClimb(monoSubText,
+			Encryption.randomAlphabet());
 
 		float newFitness = (float) tetagram.fitness(monoSubText,
 			newAlphabet);
@@ -189,14 +218,27 @@ public class Analysis {
 	    }
 
 	    LOG.info("ANSWER: "
-		    + Encryption.transscribeCipherText(monoSubText,
-			    bestAlphabet));
+		    + Encryption
+			    .transcribeCipherText(monoSubText, bestAlphabet));
 	    correctAnalysis++;
 	}
 
 	LOG.info("--------- END OF DECRYPTION");
     }
 
+    /**
+     * A monoalphabetic substitution solver using simmulated annealing.
+     * 
+     * @param cipherText
+     *            Cipher text
+     * @param alphabet
+     *            Starting alphabet
+     * @param T
+     *            Initial tempterature
+     * @param a
+     *            Temperature factor
+     * @return Best alphabet
+     */
     public Map<Character, Character> simmulatedAnnealing(String cipherText,
 	    Map<Character, Character> alphabet, double T, double a) {
 
@@ -245,6 +287,15 @@ public class Analysis {
 	return alphabet;
     }
 
+    /**
+     * A monoalphabetic substitution solver using hill-climbing.
+     * 
+     * @param cipherText
+     *            Cipher text
+     * @param alphabet
+     *            Starting alphabet
+     * @return Best alphabet
+     */
     public Map<Character, Character> hillClimb(String cipherText,
 	    Map<Character, Character> alphabet) {
 
@@ -286,6 +337,13 @@ public class Analysis {
 	return alphabet;
     }
 
+    /**
+     * Guesses an alphabet based on letter frequencies.
+     * 
+     * @param text
+     *            Cipher text
+     * @return Guessed alphabet
+     */
     public Map<Character, Character> guessAlphabet(String text) {
 	String letterFreqs = "ETAOINHSRDLMUWYCFGPBVKXJQZ0123456789";
 	Map<Character, Integer> freq = new HashMap<Character, Integer>();
@@ -317,6 +375,13 @@ public class Analysis {
 	return alphabet;
     }
 
+    /**
+     * Does multiple test runs of the hill-climber and verifying its results. It
+     * generates a random substitution from the source text.
+     * 
+     * @param text
+     *            Source text
+     */
     public void doHillclimbTestRun(String text) {
 	Random r = new Random();
 	int textLength = 100;
@@ -331,12 +396,12 @@ public class Analysis {
 	    // encode
 	    Map<Character, Character> encryptionAlphabet = Encryption
 		    .randomAlphabet();
-	    String encryptedText = Encryption.transscribeCipherText(plainText,
+	    String encryptedText = Encryption.transcribeCipherText(plainText,
 		    encryptionAlphabet);
 
 	    float fitness = 0;
 	    Map<Character, Character> bestAlphabet = new HashMap<Character, Character>();
-	    for (int j = 0; j < 200; j++) {
+	    for (int j = 0; j < 10; j++) {
 		Map<Character, Character> newAlphabet = hillClimb(
 			encryptedText, Encryption.randomAlphabet());
 
@@ -350,7 +415,7 @@ public class Analysis {
 
 	    // Map<Character, Character> bestAlphabet = simmulatedAnnealing2(
 	    // encryptedText, randomAlphabet(), 0.1, 0.6);
-	    String answer = Encryption.transscribeCipherText(encryptedText,
+	    String answer = Encryption.transcribeCipherText(encryptedText,
 		    bestAlphabet);
 	    int count = 0;
 	    for (Entry<Character, Character> entry : Utils.invert(

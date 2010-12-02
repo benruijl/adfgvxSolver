@@ -6,9 +6,24 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * This class is a useful representation of a Polybius square. This square is
+ * used to fraction each character into two in the encryption and to defraction
+ * each character in the decryption.
+ * 
+ * @author Ben Ruijl
+ * 
+ */
 public class PolybiusSquare {
+    /** Names of the keys (labels) of the rows and columns. */
     public static char[] keyName = { 'A', 'D', 'F', 'G', 'V', 'X' };
 
+    /**
+     * Helper class that defines an entry in the square.
+     * 
+     * @author Ben Ruijl
+     * 
+     */
     private class Entry {
 	private final int col;
 	private final int row;
@@ -27,9 +42,21 @@ public class PolybiusSquare {
 	}
     }
 
+    /** Values in the square. */
     private char[][] square = new char[6][6];
+    /**
+     * The inverse of the square: a map from a character in the square to the
+     * row and column index.
+     */
     private Map<Character, Entry> inverseSquare;
 
+    /**
+     * Maps a key name (label) to an index.
+     * 
+     * @param key
+     *            Key in <code>keyName</code>
+     * @return Index
+     */
     static int keyNameToIndex(char key) {
 	switch (key) {
 	case 'A':
@@ -49,6 +76,12 @@ public class PolybiusSquare {
 	}
     }
 
+    /**
+     * Creates a new Polybius square.
+     * 
+     * @param squareData
+     *            Characters in the grid, specified row-wise.
+     */
     public PolybiusSquare(List<Character> squareData) {
 	inverseSquare = new HashMap<Character, Entry>();
 
@@ -58,16 +91,27 @@ public class PolybiusSquare {
 	}
 
     }
-    
-    public static String mapBigramToMonogram(List<List<Character>> row,
+
+    /**
+     * Unfractions the text by mapping the bigram of key names to the value in
+     * the grid it represents. It finds the bigram by matching the correct row
+     * and column key names.
+     * 
+     * @param row
+     *            List of row key names
+     * @param col
+     *            List of column key names
+     * @return Unfractioned text
+     */
+    public static String unFraction(List<List<Character>> row,
 	    List<List<Character>> col) {
 	StringBuffer buffer = new StringBuffer();
 
 	/* Generate text from cols and rows */
 	for (int j = 0; j < row.get(0).size(); j++) { // which row
 	    for (int i = 0; i < row.size(); i++) { // which col
-		int index = keyNameToIndex(row.get(i).get(j))
-			* 6 + keyNameToIndex(col.get(i).get(j));
+		int index = keyNameToIndex(row.get(i).get(j)) * 6
+			+ keyNameToIndex(col.get(i).get(j));
 		buffer.append(Encryption.plainAlphabet.charAt(index));
 	    }
 	}
@@ -75,12 +119,18 @@ public class PolybiusSquare {
 	return buffer.toString();
     }
 
+    /**
+     * Generates a random square, using the alphabet of
+     * <code>plainAlphabet</code>
+     * 
+     * @return Random square
+     * @see Encryption#plainAlphabet
+     */
     public static PolybiusSquare generateRandomSquare() {
-	String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
 	List<Character> squareData = new ArrayList<Character>();
 
-	for (int i = 0; i < alphabet.length(); i++) {
-	    squareData.add(alphabet.charAt(i));
+	for (int i = 0; i < Encryption.plainAlphabet.length(); i++) {
+	    squareData.add(Encryption.plainAlphabet.charAt(i));
 	}
 
 	Collections.shuffle(squareData);
@@ -88,7 +138,14 @@ public class PolybiusSquare {
 	return new PolybiusSquare(squareData);
     }
 
-    public String encode(String input) {
+    /**
+     * Fractions a text using the square.
+     * 
+     * @param input
+     *            Input text
+     * @return Fractioned text
+     */
+    public String fraction(String input) {
 	StringBuffer result = new StringBuffer();
 
 	for (int i = 0; i < input.length(); i++) {
@@ -100,6 +157,9 @@ public class PolybiusSquare {
 	return result.toString();
     }
 
+    /**
+     * Prints the square to the screen.
+     */
     @Override
     public String toString() {
 	StringBuffer result = new StringBuffer("\n");

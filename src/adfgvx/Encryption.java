@@ -6,17 +6,28 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * This class provides functions that are used in the encryption and decryption
+ * fase of the cipher.
+ * 
+ * @author Ben Ruijl
+ * 
+ */
 public class Encryption {
+    /** The reference alphabet (English). */
     static public String plainAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
-    
+
     /**
+     * Transcribes a cipher text to a new one using the <code>alphabet</code>
+     * for the substitution map.
      * 
      * @param cipherText
+     *            Cipher text
      * @param alphabet
-     *            Alphabet from ciphertext to plaintext
-     * @return
+     *            Alphabet from cipher text to plain text
+     * @return Transcribed text
      */
-    public static String transscribeCipherText(String cipherText,
+    public static String transcribeCipherText(String cipherText,
 	    Map<Character, Character> alphabet) {
 	/* Transcribe ciphertext */
 	char[] newTextArray = cipherText.toCharArray();
@@ -29,6 +40,12 @@ public class Encryption {
 	return newText;
     }
 
+    /**
+     * Generates a random alphabet. It uses <code>plainAlphabet</code> to get
+     * all the characters.
+     * 
+     * @return Random alphabet
+     */
     public static Map<Character, Character> randomAlphabet() {
 	List<Character> alphabet = new ArrayList<Character>();
 
