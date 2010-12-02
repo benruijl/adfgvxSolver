@@ -15,7 +15,7 @@ import java.util.Map;
  */
 public class Encryption {
     /** The reference alphabet (English). */
-    static public String plainAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+    public static String plainAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
 
     /**
      * Transcribes a cipher text to a new one using the <code>alphabet</code>

@@ -123,8 +123,8 @@ public class Pattern {
      * 
      * @param freqA
      *            Frequency table of first text
-     * @param freqBFrequency
-     *            table of second text
+     * @param freqB
+     *            Frequency table of second text
      * @return Dissimilarity between two patterns expressed as an integer
      */
     private int patternDissimilarity(final Map<IntArrayWrapper, Double> freqA,

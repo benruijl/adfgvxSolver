@@ -130,7 +130,7 @@ public class Analysis {
         LOG.info(col);
         LOG.info(row);
 
-        final int invKey[] = new int[key.size()];
+        final int[] invKey = new int[key.size()];
         for (int i = 0; i < key.size(); i++) {
             invKey[key.get(i)] = i;
         }
@@ -235,7 +235,7 @@ public class Analysis {
      *            Cipher text
      * @param alphabet
      *            Starting alphabet
-     * @param T
+     * @param initialTemperature
      *            Initial tempterature
      * @param a
      *            Temperature factor
@@ -243,7 +243,7 @@ public class Analysis {
      */
     public Map<Character, Character> simmulatedAnnealing(
             final String cipherText, final Map<Character, Character> alphabet,
-            double T, final double a) {
+            final double initialTemperature, final double a) {
 
         final Random r = new Random();
 
@@ -254,7 +254,8 @@ public class Analysis {
         final Entry<Character, Character>[] alphabetArray = alphabet.entrySet()
                 .toArray(new Entry[0]);
 
-        while (T > absZero) {
+        double temperature = initialTemperature;
+        while (temperature > absZero) {
             boolean done = false;
             final double oldFitness = fitness;
 
@@ -269,8 +270,8 @@ public class Analysis {
                         // LOG.info(fitness - oldFitness);
 
                         if (fitness > oldFitness
-                                || Math.exp((fitness - oldFitness) / T) > r
-                                        .nextDouble()) {
+                                || Math.exp((fitness - oldFitness)
+                                        / temperature) > r.nextDouble()) {
                             done = true;
                             break;
                         } else {
@@ -284,7 +285,7 @@ public class Analysis {
                 }
             }
 
-            T = T * a;
+            temperature = temperature * a;
         }
 
         return alphabet;
