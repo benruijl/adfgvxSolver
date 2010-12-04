@@ -20,7 +20,7 @@ import org.apache.log4j.Logger;
  * 
  * @see RowIdentifier
  * @see Pattern
- * @see Tetagram
+ * @see tetragram
  */
 public class Analysis {
     /** Logger. */
@@ -30,8 +30,8 @@ public class Analysis {
     private final Random random;
     /** Pattern solver. */
     private final Pattern pattern;
-    /** Tetagram solver. */
-    private final Tetagram tetagram;
+    /** tetragram solver. */
+    private final Tetragram tetragram;
 
     /** Number of correct decryptions. */
     private int correctAnalysis = 0;
@@ -41,12 +41,12 @@ public class Analysis {
      * 
      * @param pattern
      *            Pattern solver
-     * @param tetagram
-     *            Tetagram solver
+     * @param tetragram
+     *            tetragram solver
      */
-    public Analysis(final Pattern pattern, final Tetagram tetagram) {
+    public Analysis(final Pattern pattern, final Tetragram tetragram) {
         this.pattern = pattern;
-        this.tetagram = tetagram;
+        this.tetragram = tetragram;
 
         random = new Random();
     }
@@ -211,7 +211,7 @@ public class Analysis {
                 final Map<Character, Character> newAlphabet = hillClimb(
                         monoSubText, Encryption.randomAlphabet());
 
-                final float newFitness = (float) tetagram.fitness(monoSubText,
+                final float newFitness = (float) tetragram.fitness(monoSubText,
                         newAlphabet);
                 if (newFitness > fitness) {
                     fitness = newFitness;
@@ -248,7 +248,7 @@ public class Analysis {
         final Random r = new Random();
 
         final double absZero = 0.00001;
-        double fitness = tetagram.fitness(cipherText, alphabet);
+        double fitness = tetragram.fitness(cipherText, alphabet);
 
         @SuppressWarnings("unchecked")
         final Entry<Character, Character>[] alphabetArray = alphabet.entrySet()
@@ -266,7 +266,7 @@ public class Analysis {
                         alphabetArray[i].setValue(alphabetArray[j].getValue());
                         alphabetArray[j].setValue(tmp);
 
-                        fitness = tetagram.fitness(cipherText, alphabet);
+                        fitness = tetragram.fitness(cipherText, alphabet);
                         // LOG.info(fitness - oldFitness);
 
                         if (fitness > oldFitness
@@ -308,7 +308,7 @@ public class Analysis {
                 .toArray(new Entry[0]);
 
         boolean goAgain = true;
-        double fitness = tetagram.fitness(cipherText, alphabet);
+        double fitness = tetragram.fitness(cipherText, alphabet);
 
         while (goAgain) {
             goAgain = false;
@@ -322,7 +322,7 @@ public class Analysis {
                         alphabetArray[i].setValue(alphabetArray[j].getValue());
                         alphabetArray[j].setValue(tmp);
 
-                        fitness = tetagram.fitness(cipherText, alphabet);
+                        fitness = tetragram.fitness(cipherText, alphabet);
 
                         if (fitness > oldFitness) {
                             goAgain = true;
@@ -398,19 +398,19 @@ public class Analysis {
             LOG.info("Plain text:\t\t" + plainText);
 
             // encode
-            final Map<Character, Character> encryptionAlphabet = Encryption
+            final TCharCharHashMap encryptionAlphabet = Encryption
                     .randomAlphabet();
             final String encryptedText = Encryption.transcribeCipherText(
                     plainText, encryptionAlphabet);
 
-            float fitness = 0;
+            double fitness = Double.MIN_VALUE;
             Map<Character, Character> bestAlphabet = new HashMap<Character, Character>();
             for (int j = 0; j < 10; j++) {
                 final Map<Character, Character> newAlphabet = hillClimb(
                         encryptedText, Encryption.randomAlphabet());
 
-                final float newFitness = (float) tetagram.fitness(
-                        encryptedText, newAlphabet);
+                final double newFitness = tetragram.fitness(encryptedText,
+                        newAlphabet);
                 if (newFitness > fitness) {
                     fitness = newFitness;
                     bestAlphabet = newAlphabet;

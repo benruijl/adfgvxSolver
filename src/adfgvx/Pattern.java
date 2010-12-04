@@ -22,7 +22,7 @@ import org.apache.log4j.Logger;
  * columns/rows in the Polybius square have to be identified,
  * 
  * To find the optimal arrangement, hillclimbing is performed. The fitness
- * function is a comparison of log pattern tetagram frequencies of the cipher
+ * function is a comparison of log pattern tetragram frequencies of the cipher
  * text to that of a large reference text.
  * 
  * 
@@ -46,11 +46,11 @@ public class Pattern {
      */
     public Pattern(final String filename) throws IOException {
         patternFreq = new HashMap<IntArrayWrapper, Double>();
-        readPatternTetagrams(filename);
+        readPatterntetragrams(filename);
     }
 
     /**
-     * Calculates the frequency table of tetagrams in a given text.
+     * Calculates the frequency table of tetragrams in a given text.
      * 
      * @param text
      *            Text to scan
@@ -96,7 +96,7 @@ public class Pattern {
 
     /**
      * Calculates the fitness of this combination of rows and columns by
-     * reconstructing the text and comparing the pattern tetagram frequencies to
+     * reconstructing the text and comparing the pattern tetragram frequencies to
      * those of a large reference text.
      * 
      * @param col
@@ -193,14 +193,14 @@ public class Pattern {
     }
 
     /**
-     * Reads the log pattern tetagram frequencies from a file.
+     * Reads the log pattern tetragram frequencies from a file.
      * 
      * @param filename
      *            Filename
      * @throws IOException
      *             Error while reading from file
      */
-    private void readPatternTetagrams(final String filename) throws IOException {
+    private void readPatterntetragrams(final String filename) throws IOException {
         final InputStream file = new FileInputStream(filename);
         final DataInputStream in = new DataInputStream(file);
 
@@ -215,7 +215,7 @@ public class Pattern {
             patternFreq.put(new IntArrayWrapper(tet), in.readDouble());
         }
 
-        LOG.info("Pattern tetagrams read.");
+        LOG.info("Pattern tetragrams read.");
 
         in.close();
     }
@@ -226,7 +226,7 @@ public class Pattern {
      * @param filename
      *            Name of output file
      * @param text
-     *            Text to calculate log tetagram pattern frequencies from
+     *            Text to calculate log tetragram pattern frequencies from
      * @throws IOException
      *             Error while writing to a file
      */

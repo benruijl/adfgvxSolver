@@ -39,13 +39,13 @@ public class Main {
     public Main(final String cipherText, final String pat, final String tet) {
         try {
             final Pattern pattern = new Pattern(pat);
-            final Tetagram tetagram = new Tetagram(tet);
-            final Analysis analysis = new Analysis(pattern, tetagram);
+            final Tetragram tetragram = new Tetragram(tet);
+            final Analysis analysis = new Analysis(pattern, tetragram);
 
             final String largeText = readCipher(cipherText);
 
-            analysis.doAnalysis(largeText); // do analysis
-            // analysis.doHillclimbTestRun(largeText); // just solve a mono sub
+            // analysis.doAnalysis(largeText); // do analysis
+            analysis.doHillclimbTestRun(largeText); // just solve a mono sub
         } catch (final IOException e) {
             e.printStackTrace();
         }
@@ -59,7 +59,7 @@ public class Main {
      *            Filename
      * @return Stripped text
      */
-    public String readCipher(final String filename) {
+    public final String readCipher(final String filename) {
         String file;
         try {
             file = new Scanner(new File(filename)).useDelimiter("\\Z").next();
@@ -87,7 +87,7 @@ public class Main {
         options.addOption("v", false, "Be verbose");
         options.addOption("c", true, "Cipher text");
         options.addOption("p", true, "Patterns");
-        options.addOption("t", true, "Tetagrams");
+        options.addOption("t", true, "tetragrams");
         options.addOption("help", false, "Display help message");
 
         final CommandLineParser parser = new GnuParser();
@@ -106,6 +106,11 @@ public class Main {
                         cmd.getOptionValue("t"));
             } else {
                 LOG.error("Please check input.");
+
+                final HelpFormatter formatter = new HelpFormatter();
+                formatter.printHelp("adfgvSolver", options);
+
+                return;
             }
 
         } catch (final ParseException e) {
