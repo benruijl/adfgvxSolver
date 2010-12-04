@@ -398,7 +398,7 @@ public class Analysis {
             LOG.info("Plain text:\t\t" + plainText);
 
             // encode
-            final TCharCharHashMap encryptionAlphabet = Encryption
+            final Map<Character, Character> encryptionAlphabet = Encryption
                     .randomAlphabet();
             final String encryptedText = Encryption.transcribeCipherText(
                     plainText, encryptionAlphabet);

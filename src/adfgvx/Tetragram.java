@@ -3,13 +3,11 @@ package adfgvx;
 import gnu.trove.TLongDoubleHashMap;
 import gnu.trove.TLongIntHashMap;
 import gnu.trove.TLongIntIterator;
-import gnu.trove.TLongIntProcedure;
 
 import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
