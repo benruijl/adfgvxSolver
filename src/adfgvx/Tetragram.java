@@ -95,6 +95,11 @@ public class Tetragram {
     private double getContributionToFitness(final long tetragram,
             final int count, final String text, final double sigmaSquared) {
         double sourceLogFreq = tetragrams.get(tetragram);
+        
+        // NOTE: this makes the convergence much slower!
+        if (sourceLogFreq == 0) {
+            return 0.0; 
+        }
 
         final double logFreq = Math.log((double) count
                 / (double) (text.length() - 3));
