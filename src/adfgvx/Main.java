@@ -45,7 +45,8 @@ public class Main {
             final String largeText = readCipher(cipherText);
 
             // analysis.doAnalysis(largeText); // do analysis
-            analysis.doHillclimbTestRun(largeText); // just solve a mono sub
+            //analysis.doHillclimbTestRun(largeText); // just solve a mono sub
+            analysis.doSimmulatedAnnealingTestRun(largeText);
         } catch (final IOException e) {
             e.printStackTrace();
         }
