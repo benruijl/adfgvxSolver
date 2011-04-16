@@ -91,18 +91,20 @@ public class Analysis {
         }
 
         RowIdentifier.findOptimalGrouping(col, row);
-        
-        LOG.info("Grouped:");
+
+        StringBuffer groups = new StringBuffer("Grouped: ");
         for (int i = 0; i < freqs.size(); i++) {
-            for (int j = 0; j < col.size(); j++)
-            if (freqs.get(i).equals(col.get(j))) {
-                LOG.info(i);
-                break;
+            for (int j = 0; j < col.size(); j++) {
+                if (freqs.get(i).equals(col.get(j))) {
+                    groups.append(i + " ");
+                    break;
+                }
             }
         }
-        
-        LOG.info(col);
-        LOG.info(row);
+
+        LOG.info(groups);
+        LOG.info("Group 1: " + col);
+        LOG.info("Group 2: " + row);
 
         // match pattern
         final List<List<Character>> charCol = new ArrayList<List<Character>>();
@@ -117,7 +119,24 @@ public class Analysis {
         }
 
         pattern.findOptimalPatternDistribution(charCol, charRow);
-        
+
+        groups = new StringBuffer("Result: ");
+        for (int i = 0; i < charCol.size(); i++) {
+            for (int j = 0; j < gridData.size(); j++) {
+                if (charCol.get(i).equals(gridData.get(j))) {
+                    groups.append(j + " ");
+                }
+            }
+
+            for (int j = 0; j < gridData.size(); j++) {
+                if (charRow.get(i).equals(gridData.get(j))) {
+                    groups.append(j + " ");
+                }
+            }
+        }
+
+        LOG.info(groups);
+
         final String monoSubText = PolybiusSquare.unFraction(charRow, charCol);
 
         Map<Character, Character> bestAlphabet = new HashMap<Character, Character>();
