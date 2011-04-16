@@ -52,9 +52,13 @@ public class Main {
 
             final String largeText = readCipher(cipherText);
 
-            // analysis.doAnalysis(largeText); // do analysis
+            for (int i = 0; i < 100; i++) {
+                analysis.doAnalysis(largeText); // do analysis
+                LOG.info("Correct ones: " + analysis.getCorrectAnalysis());
+            }
+
             // analysis.doHillclimbTestRun(largeText); // just solve a mono sub
-            analysis.decrypt(cipherTextTest, 16);
+            // analysis.decrypt(cipherTextTest, 16);
         } catch (final IOException e) {
             e.printStackTrace();
         }

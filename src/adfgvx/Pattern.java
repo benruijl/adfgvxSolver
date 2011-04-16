@@ -96,8 +96,8 @@ public class Pattern {
 
     /**
      * Calculates the fitness of this combination of rows and columns by
-     * reconstructing the text and comparing the pattern tetragram frequencies to
-     * those of a large reference text.
+     * reconstructing the text and comparing the pattern tetragram frequencies
+     * to those of a large reference text.
      * 
      * @param col
      *            List of transposition grid columns that map to columns in the
@@ -107,13 +107,14 @@ public class Pattern {
      *            Polybius square
      * @return Fitness of this arrangement
      */
-    private int patternFitness(final List<List<Character>> col,
+    private float patternFitness(final List<List<Character>> col,
             final List<List<Character>> row) {
 
         final Map<IntArrayWrapper, Double> patFreq = calcPatternFrequencies(PolybiusSquare
                 .unFraction(row, col));
 
-        return patternDissimilarity(patternFreq, patFreq); // compare the
+        return (float) Math.sqrt(patternDissimilarity(patternFreq, patFreq)); // compare
+        // the
         // frequencies
     }
 
@@ -127,9 +128,10 @@ public class Pattern {
      *            Frequency table of second text
      * @return Dissimilarity between two patterns expressed as an integer
      */
-    private int patternDissimilarity(final Map<IntArrayWrapper, Double> freqA,
+    private float patternDissimilarity(
+            final Map<IntArrayWrapper, Double> freqA,
             final Map<IntArrayWrapper, Double> freqB) {
-        int score = 0;
+        float score = 0;
 
         for (final IntArrayWrapper key : freqB.keySet()) {
             Double first = freqA.get(key);
@@ -162,10 +164,10 @@ public class Pattern {
             final List<List<Character>> row) {
         for (int i = 0; i < col.size() - 1; i++) {
             for (int j = i; j < col.size(); j++) {
-                final int oldScore = patternFitness(col, row);
+                final float oldScore = patternFitness(col, row);
                 Collections.swap(col, i, j);
 
-                final int newScore = patternFitness(col, row);
+                final float newScore = patternFitness(col, row);
 
                 if (newScore < oldScore) {
                     findOptimalPatternDistribution(col, row);
@@ -177,10 +179,10 @@ public class Pattern {
 
         for (int i = 0; i < row.size() - 1; i++) {
             for (int j = i; j < row.size(); j++) {
-                final int oldScore = patternFitness(col, row);
+                final float oldScore = patternFitness(col, row);
                 Collections.swap(row, i, j);
 
-                final int newScore = patternFitness(col, row);
+                final float newScore = patternFitness(col, row);
 
                 if (newScore < oldScore) {
                     findOptimalPatternDistribution(col, row);
@@ -200,7 +202,8 @@ public class Pattern {
      * @throws IOException
      *             Error while reading from file
      */
-    private void readPatterntetragrams(final String filename) throws IOException {
+    private void readPatterntetragrams(final String filename)
+            throws IOException {
         final InputStream file = new FileInputStream(filename);
         final DataInputStream in = new DataInputStream(file);
 

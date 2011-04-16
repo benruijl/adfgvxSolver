@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This class provides functions that help indentify which columns in the
+ * This class provides functions that help identify which columns in the
  * transposition grid are columns/rows in the Polybius square.
  * 
  * @author Ben Ruijl
@@ -19,13 +19,13 @@ public class RowIdentifier {
      *            Frequencies
      * @return The amount of dissimilarity
      */
-    private static int groupDissimilarity(
+    private static float groupDissimilarity(
             final List<Map<Character, Integer>> freqs) {
-        int score = 0;
+        float score = 0;
 
         for (int i = 0; i < freqs.size() - 1; i++) {
             for (int j = i; j < freqs.size(); j++) {
-                score += dissimilarity(freqs.get(i), freqs.get(j));
+                score += Math.sqrt(dissimilarity(freqs.get(i), freqs.get(j)));
             }
         }
 
@@ -79,14 +79,14 @@ public class RowIdentifier {
 
         for (int i = 0; i < col.size() - 1; i++) {
             for (int j = i; j < col.size(); j++) {
-                final int curScore = groupDissimilarity(col)
+                final float curScore = groupDissimilarity(col)
                         + groupDissimilarity(row);
 
                 Map<Character, Integer> temp = col.get(i);
                 col.set(i, row.get(j));
                 row.set(j, temp);
 
-                final int score = groupDissimilarity(col)
+                final float score = groupDissimilarity(col)
                         + groupDissimilarity(row);
 
                 if (score < curScore) {

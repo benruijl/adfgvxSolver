@@ -95,10 +95,10 @@ public class Tetragram {
     private double getContributionToFitness(final long tetragram,
             final int count, final String text, final double sigmaSquared) {
         double sourceLogFreq = tetragrams.get(tetragram);
-        
+
         // NOTE: this makes the convergence much slower!
         if (sourceLogFreq == 0) {
-            return 0.0; 
+            return 0.0;
         }
 
         final double logFreq = Math.log((double) count
@@ -124,11 +124,11 @@ public class Tetragram {
 
         char[] c = text.toCharArray();
         long tetragram = ((long) c[0] << 48) | (((long) c[1]) << 32)
-                | (((long) c[2]) << 16) | ((long) c[3]);
+                | (((long) c[2]) << 16) | (c[3]);
 
         for (int i = 4, last = text.length(); i < last; i++) {
 
-            tetragram = (tetragram << 16) | ((long) c[i]);
+            tetragram = (tetragram << 16) | (c[i]);
 
             ciphertetragrams.adjustOrPutValue(tetragram, 1, 1);
         }

@@ -73,8 +73,6 @@ public class Analysis {
                 final Character curKey = col.get(j);
                 freq.put(curKey, freq.get(curKey) + 1);
             }
-
-            LOG.info(freq);
         }
 
         LOG.info("After sorting:");
@@ -103,8 +101,6 @@ public class Analysis {
         }
 
         LOG.info(groups);
-        LOG.info("Group 1: " + col);
-        LOG.info("Group 2: " + row);
 
         // match pattern
         final List<List<Character>> charCol = new ArrayList<List<Character>>();
@@ -322,7 +318,7 @@ public class Analysis {
 
             float fitness = 0;
             Map<Character, Character> bestAlphabet = new HashMap<Character, Character>();
-            for (int j = 0; j < 8; j++) {
+            for (int j = 0; j < 1; j++) {
                 final Map<Character, Character> newAlphabet = hillClimb(
                         monoSubText, Encryption.randomAlphabet());
 
@@ -602,6 +598,10 @@ public class Analysis {
         }
 
         LOG.info("Correct decryptions: " + correct);
+    }
+
+    public int getCorrectAnalysis() {
+        return correctAnalysis;
     }
 
 }
