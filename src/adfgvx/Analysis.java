@@ -1,5 +1,7 @@
 package adfgvx;
 
+import gnu.trove.TObjectIntHashMap;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -134,6 +136,8 @@ public class Analysis {
         LOG.info(groups);
 
         final String monoSubText = PolybiusSquare.unFraction(charRow, charCol);
+        
+        LOG.info("IC: " + indexOfCoincidence(monoSubText));
 
         Map<Character, Character> bestAlphabet = new HashMap<Character, Character>();
 
@@ -604,4 +608,21 @@ public class Analysis {
         return correctAnalysis;
     }
 
+    public float indexOfCoincidence(String text) {
+        final TObjectIntHashMap<Character> freq = new TObjectIntHashMap<Character>();
+
+        for (int i = 0; i < text.length(); i++) {
+            freq.adjustOrPutValue(text.charAt(i), 1, 1);
+        }
+
+        float ic = 0;
+
+        for (int i = 0; i < Encryption.plainAlphabet.length(); i++) {
+            ic += freq.get(Encryption.plainAlphabet.charAt(i))
+                    * (freq.get(Encryption.plainAlphabet.charAt(i)) - 1);
+        }
+
+        return ic * Encryption.plainAlphabet.length()
+                / (text.length() * (text.length() - 1));
+    }
 }
