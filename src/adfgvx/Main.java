@@ -26,6 +26,14 @@ public class Main {
     /** Logger. */
     private static final Logger LOG = Logger.getLogger(Main.class);
 
+    private static final String cipherTextTest = "DAVFGDFVDDVFGDVADVVFFGDVAVVDFVD"
+            + "DDXDAFADADVAGADVFAGADDFGXAGXAAADAVGFGFAGGFVVFDGGGFAGXGVVFDADAGAVDVVFGXGFFVVDD"
+            + "GDGFFXFAVFVVFGDGFXFDGGFXDGVAVAVFFDDDXDFDFGAFGFFVGAGADAVAFDAGXAVAAFGFGXADVAVAAAV"
+            + "DDFAXVFAVDFFAGVGVVVDFGFFVAVDFVFVVAGGDVFVFDVDFVFVFFFDVGVVGVADFAGDFVAGDAAGFAXADADXD"
+            + "FAXXDGGFDGAFDXXAVFXFAGGXGGFXFFFDAFVFFDFVDDFGXVFFDDVVDAVDFVFVFVVVVAFFVDAAVDAADXDAGFA"
+            + "GGAGGDXDXAAFAGGAAVGDDFDGDAAAGFGFXAAFGFXDFGFGAADADDXFGFFDAFGGDVFGDDXGAVXGFFVFXAADFVXVFD"
+            + "VDFDVVVXDVGAGFVFGVFXVDDVDDGVAGGVDVAVFDVVVVVADVFGGDGVVAGXFVV";
+
     /**
      * Creates the main application.
      * 
@@ -45,8 +53,8 @@ public class Main {
             final String largeText = readCipher(cipherText);
 
             // analysis.doAnalysis(largeText); // do analysis
-            //analysis.doHillclimbTestRun(largeText); // just solve a mono sub
-            analysis.doSimmulatedAnnealingTestRun(largeText);
+            // analysis.doHillclimbTestRun(largeText); // just solve a mono sub
+            analysis.decrypt(cipherTextTest, 16);
         } catch (final IOException e) {
             e.printStackTrace();
         }
