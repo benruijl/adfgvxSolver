@@ -96,7 +96,7 @@ public class Analysis {
         for (int i = 0; i < freqs.size(); i++) {
             for (int j = 0; j < col.size(); j++)
             if (freqs.get(i).equals(col.get(j))) {
-                LOG.info(j);
+                LOG.info(i);
                 break;
             }
         }
