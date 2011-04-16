@@ -110,12 +110,12 @@ public class Pattern {
     private float patternFitness(final List<List<Character>> col,
             final List<List<Character>> row) {
 
-        final Map<IntArrayWrapper, Double> patFreq = calcPatternFrequencies(PolybiusSquare
+        return Analysis.indexOfCoincidence(PolybiusSquare.unFraction(row, col));
+
+       /* final Map<IntArrayWrapper, Double> patFreq = calcPatternFrequencies(PolybiusSquare
                 .unFraction(row, col));
 
-        return (float) Math.sqrt(patternDissimilarity(patternFreq, patFreq)); // compare
-        // the
-        // frequencies
+        return (float) Math.sqrt(patternDissimilarity(patternFreq, patFreq));*/
     }
 
     /**
@@ -169,7 +169,7 @@ public class Pattern {
 
                 final float newScore = patternFitness(col, row);
 
-                if (newScore < oldScore) {
+                if (newScore > oldScore) {
                     findOptimalPatternDistribution(col, row);
                 } else {
                     Collections.swap(col, i, j); // swap back
@@ -184,7 +184,7 @@ public class Pattern {
 
                 final float newScore = patternFitness(col, row);
 
-                if (newScore < oldScore) {
+                if (newScore > oldScore) {
                     findOptimalPatternDistribution(col, row);
                 } else {
                     Collections.swap(row, i, j); // swap back

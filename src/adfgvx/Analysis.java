@@ -136,7 +136,7 @@ public class Analysis {
         LOG.info(groups);
 
         final String monoSubText = PolybiusSquare.unFraction(charRow, charCol);
-        
+
         LOG.info("IC: " + indexOfCoincidence(monoSubText));
 
         Map<Character, Character> bestAlphabet = new HashMap<Character, Character>();
@@ -173,18 +173,21 @@ public class Analysis {
      * 
      * @param text
      *            Source text
+     * @param testLevel
+     *            How far to go in the check. 0 stops at the matching, 2 at the
+     *            key, 3 or more goes all the way.
      */
-    public void doAnalysis(final String text) {
+    public void doAnalysis(final String text, int testLevel) {
         final PolybiusSquare square = PolybiusSquare.generateRandomSquare();
         LOG.debug(square);
 
         /* Generate an even keylength between 4 and 10. */
-        final int keyLength = random.nextInt(4) * 2 + 2;
+        final int keyLength = random.nextInt(4) * 2 + 4;
         final List<Integer> key = Grid.generateRandomKey(keyLength);
         LOG.info("Key: " + key);
 
         // Shrink ciphertext. It should be a multiple of the key length
-        final int timesKeyLength = 200;
+        final int timesKeyLength = 300;
         final int start = random.nextInt(text.length() - keyLength
                 * timesKeyLength);
         final String cipherTextPiece = text.substring(start, start + keyLength
@@ -275,6 +278,15 @@ public class Analysis {
         LOG.info("Correct identification of rows and cols: "
                 + Math.max(correct, correctTrans) + "/" + key.size());
 
+        if (Math.max(correct, correctTrans) == key.size()) {
+            if (testLevel == 1) {
+                correctAnalysis++;
+                return;
+            }
+        } else {
+            return;
+        }
+
         // match pattern
         final List<List<Character>> charCol = new ArrayList<List<Character>>();
         final List<List<Character>> charRow = new ArrayList<List<Character>>();
@@ -316,29 +328,34 @@ public class Analysis {
                 + Math.max(correct, correctTrans) + "/" + key.size());
 
         if (Math.max(correct, correctTrans) == key.size()) {
-            // transposition grid is correct, now do mono sub solving
-            final String monoSubText = PolybiusSquare.unFraction(charRow,
-                    charCol);
-
-            float fitness = 0;
-            Map<Character, Character> bestAlphabet = new HashMap<Character, Character>();
-            for (int j = 0; j < 1; j++) {
-                final Map<Character, Character> newAlphabet = hillClimb(
-                        monoSubText, Encryption.randomAlphabet());
-
-                final float newFitness = (float) tetragram.fitness(monoSubText,
-                        newAlphabet);
-                if (newFitness > fitness) {
-                    fitness = newFitness;
-                    bestAlphabet = newAlphabet;
-                }
+            if (testLevel == 2) {
+                correctAnalysis++;
+                return;
             }
-
-            LOG.info("ANSWER: "
-                    + Encryption
-                            .transcribeCipherText(monoSubText, bestAlphabet));
-            correctAnalysis++;
+        } else {
+            return;
         }
+
+        // transposition grid is correct, now do mono sub solving
+        final String monoSubText = PolybiusSquare.unFraction(charRow, charCol);
+
+        float fitness = 0;
+        Map<Character, Character> bestAlphabet = new HashMap<Character, Character>();
+        for (int j = 0; j < 1; j++) {
+            final Map<Character, Character> newAlphabet = hillClimb(
+                    monoSubText, Encryption.randomAlphabet());
+
+            final float newFitness = (float) tetragram.fitness(monoSubText,
+                    newAlphabet);
+            if (newFitness > fitness) {
+                fitness = newFitness;
+                bestAlphabet = newAlphabet;
+            }
+        }
+
+        LOG.info("ANSWER: "
+                + Encryption.transcribeCipherText(monoSubText, bestAlphabet));
+        correctAnalysis++;
 
         LOG.info("--------- END OF DECRYPTION");
     }
@@ -608,7 +625,7 @@ public class Analysis {
         return correctAnalysis;
     }
 
-    public float indexOfCoincidence(String text) {
+    public static float indexOfCoincidence(String text) {
         final TObjectIntHashMap<Character> freq = new TObjectIntHashMap<Character>();
 
         for (int i = 0; i < text.length(); i++) {
