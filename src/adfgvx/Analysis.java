@@ -182,12 +182,12 @@ public class Analysis {
         LOG.debug(square);
 
         /* Generate an even keylength between 4 and 10. */
-        final int keyLength = random.nextInt(4) * 2 + 4;
+        final int keyLength = 8;//random.nextInt(4) * 2 + 4;
         final List<Integer> key = Grid.generateRandomKey(keyLength);
         LOG.info("Key: " + key);
 
         // Shrink ciphertext. It should be a multiple of the key length
-        final int timesKeyLength = 300;
+        final int timesKeyLength = 600;
         final int start = random.nextInt(text.length() - keyLength
                 * timesKeyLength);
         final String cipherTextPiece = text.substring(start, start + keyLength

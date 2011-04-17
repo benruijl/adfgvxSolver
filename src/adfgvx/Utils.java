@@ -1,6 +1,8 @@
 package adfgvx;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -42,5 +44,51 @@ public class Utils {
         }
 
         return result;
+    }
+
+    /**
+     * Returns all combinations of k out of N.
+     * 
+     * @param <T>
+     * @param list
+     *            List of length N
+     * @param k
+     *            k to pick out of N
+     * @return
+     */
+    public static <T> List<List<T>> combinations(List<T> list, int k) {
+        ArrayList<List<T>> result = new ArrayList<List<T>>();
+        for (int i = 0; i < list.size(); i++) {
+            if (k == 1) {
+                List<T> one = new ArrayList<T>();
+                one.add(list.get(i));
+                result.add(one);
+            } else {
+                for (List<T> next : combinations(
+                        list.subList(i + 1, list.size()), k - 1)) {
+                    next.add(list.get(i));
+                    result.add(next);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public static <T> List<T> complementary(List<T> total, List<T> sub) {
+        List<T> comp = new ArrayList<T>();
+        Map<T, Boolean> cont = new HashMap<T, Boolean>();
+
+        for (T a : sub) {
+            cont.put(a, Boolean.TRUE);
+        }
+
+        for (T a : total) {
+            if (!cont.containsKey(a)) {
+                comp.add(a);
+            }
+        }
+
+        return comp;
     }
 }

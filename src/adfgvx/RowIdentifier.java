@@ -1,5 +1,6 @@
 package adfgvx;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -75,29 +76,32 @@ public class RowIdentifier {
     public static void findOptimalGrouping(
             final List<Map<Character, Integer>> col,
             final List<Map<Character, Integer>> row) {
-        // lowest score is best
+        final List<Map<Character, Integer>> total = new ArrayList<Map<Character, Integer>>();
+        total.addAll(col);
+        total.addAll(row);
 
-        for (int i = 0; i < col.size() - 1; i++) {
-            for (int j = i; j < col.size(); j++) {
-                final float curScore = groupDissimilarity(col)
-                        + groupDissimilarity(row);
+        // TODO: prevent checking everything twice (col,row=row,col)
+        List<List<Map<Character, Integer>>> comb = Utils.combinations(total,
+                total.size() / 2);
 
-                Map<Character, Integer> temp = col.get(i);
-                col.set(i, row.get(j));
-                row.set(j, temp);
+        float bestScore = Float.MAX_VALUE;
+        List<Map<Character, Integer>> bestc = null;
+        List<Map<Character, Integer>> bestr = null;
+        for (List<Map<Character, Integer>> c : comb) {
+            List<Map<Character, Integer>> r = Utils.complementary(total, c);
 
-                final float score = groupDissimilarity(col)
-                        + groupDissimilarity(row);
+            final float score = (float) Math.sqrt(groupDissimilarity(c) + groupDissimilarity(r));
 
-                if (score < curScore) {
-                    findOptimalGrouping(col, row);
-                } else {
-                    temp = col.get(i);
-                    col.set(i, row.get(j));
-                    row.set(j, temp);
-                }
+            if (score < bestScore) {
+                bestScore = score;
+                bestc = c;
+                bestr = r;
             }
         }
 
+        col.clear();
+        col.addAll(bestc);
+        row.clear();
+        row.addAll(bestr);
     }
 }

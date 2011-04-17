@@ -53,7 +53,7 @@ public class Main {
             final String largeText = readCipher(cipherText);
 
             for (int i = 0; i < 1000; i++) {
-                analysis.doAnalysis(largeText, 2); // do analysis
+                analysis.doAnalysis(largeText, 1); // do analysis
             }
 
             LOG.info("Correct ones: " + analysis.getCorrectAnalysis());
