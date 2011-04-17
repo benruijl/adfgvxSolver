@@ -12,6 +12,8 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import utils.Utils;
+
 /**
  * This class delivers functions to solve a monoalphabetic substitution cipher.
  * It uses log frequencies of tetragrams to determine how fit a solution is. The

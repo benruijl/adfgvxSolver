@@ -1,6 +1,7 @@
 package adfgvx;
 
 import gnu.trove.TObjectIntHashMap;
+import gnu.trove.TObjectIntProcedure;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,6 +13,9 @@ import java.util.Map.Entry;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
+
+import utils.IntPair;
+import utils.Utils;
 
 /**
  * This class does all the analysis. It uses various algorithms to solve the
@@ -59,11 +63,11 @@ public class Analysis {
 
         // calculate frequencies
         final List<List<Character>> gridData = cipherGrid.getGrid();
-        final List<Map<Character, Integer>> freqs = new ArrayList<Map<Character, Integer>>();
+        final List<TObjectIntHashMap<Character>> freqs = new ArrayList<TObjectIntHashMap<Character>>();
 
         for (int i = 0; i < gridData.size(); i++) {
-            freqs.add(new HashMap<Character, Integer>());
-            final Map<Character, Integer> freq = freqs.get(i);
+            freqs.add(new TObjectIntHashMap<Character>());
+            final TObjectIntHashMap<Character> freq = freqs.get(i);
 
             for (final Character c : PolybiusSquare.keyName) {
                 freq.put(c, 0);
@@ -79,8 +83,8 @@ public class Analysis {
 
         LOG.info("After sorting:");
 
-        final List<Map<Character, Integer>> col = new ArrayList<Map<Character, Integer>>();
-        final List<Map<Character, Integer>> row = new ArrayList<Map<Character, Integer>>();
+        final List<TObjectIntHashMap<Character>> col = new ArrayList<TObjectIntHashMap<Character>>();
+        final List<TObjectIntHashMap<Character>> row = new ArrayList<TObjectIntHashMap<Character>>();
 
         for (int i = 0; i < freqs.size(); i++) {
             if (i < freqs.size() / 2) {
@@ -182,12 +186,12 @@ public class Analysis {
         LOG.debug(square);
 
         /* Generate an even keylength between 4 and 10. */
-        final int keyLength = 8;//random.nextInt(4) * 2 + 4;
+        final int keyLength = 8;// random.nextInt(4) * 2 + 4;
         final List<Integer> key = Grid.generateRandomKey(keyLength);
         LOG.info("Key: " + key);
 
         // Shrink ciphertext. It should be a multiple of the key length
-        final int timesKeyLength = 600;
+        final int timesKeyLength = 300;
         final int start = random.nextInt(text.length() - keyLength
                 * timesKeyLength);
         final String cipherTextPiece = text.substring(start, start + keyLength
@@ -211,11 +215,11 @@ public class Analysis {
 
         // calculate frequencies
         final List<List<Character>> gridData = cipherGrid.getGrid();
-        final List<Map<Character, Integer>> freqs = new ArrayList<Map<Character, Integer>>();
+        final List<TObjectIntHashMap<Character>> freqs = new ArrayList<TObjectIntHashMap<Character>>();
 
         for (int i = 0; i < gridData.size(); i++) {
-            freqs.add(new HashMap<Character, Integer>());
-            final Map<Character, Integer> freq = freqs.get(i);
+            freqs.add(new TObjectIntHashMap<Character>());
+            final TObjectIntHashMap<Character> freq = freqs.get(i);
 
             for (final Character c : PolybiusSquare.keyName) {
                 freq.put(c, 0);
@@ -233,8 +237,8 @@ public class Analysis {
 
         LOG.info("After sorting:");
 
-        final List<Map<Character, Integer>> col = new ArrayList<Map<Character, Integer>>();
-        final List<Map<Character, Integer>> row = new ArrayList<Map<Character, Integer>>();
+        final List<TObjectIntHashMap<Character>> col = new ArrayList<TObjectIntHashMap<Character>>();
+        final List<TObjectIntHashMap<Character>> row = new ArrayList<TObjectIntHashMap<Character>>();
 
         for (int i = 0; i < freqs.size(); i++) {
             if (i < freqs.size() / 2) {
@@ -487,7 +491,7 @@ public class Analysis {
      */
     public Map<Character, Character> guessAlphabet(final String text) {
         final String letterFreqs = "ETAOINHSRDLMUWYCFGPBVKXJQZ0123456789";
-        final Map<Character, Integer> freq = new HashMap<Character, Integer>();
+        final TObjectIntHashMap<Character> freq = new TObjectIntHashMap<Character>();
 
         for (int i = 0; i < text.length(); i++) {
             if (freq.containsKey(text.charAt(i))) {
@@ -497,20 +501,30 @@ public class Analysis {
             }
         }
 
-        final ArrayList<Entry<Character, Integer>> list = new ArrayList<Entry<Character, Integer>>(
-                freq.entrySet());
-        Collections.sort(list, new Comparator<Entry<Character, Integer>>() {
+        final List<IntPair<Character>> list = new ArrayList<IntPair<Character>>(
+                freq.size());
+
+        freq.forEachEntry(new TObjectIntProcedure<Character>() {
+
             @Override
-            public int compare(final Entry<Character, Integer> o1,
-                    final Entry<Character, Integer> o2) {
-                return o1.getValue().compareTo(o2.getValue());
+            public boolean execute(Character key, int value) {
+                list.add(new IntPair<Character>(key, value));
+                return true;
             }
         });
 
+        Collections.sort(list, new Comparator<IntPair<Character>>() {
+            @Override
+            public int compare(final IntPair<Character> o1,
+                    final IntPair<Character> o2) {
+                return o1.getSecond() - o2.getSecond();
+            }
+        });
+        
         final Map<Character, Character> alphabet = new HashMap<Character, Character>();
 
         for (int i = 0; i < list.size(); i++) {
-            alphabet.put(list.get(i).getKey(), letterFreqs.charAt(i));
+            alphabet.put(list.get(i).getFirst(), letterFreqs.charAt(i));
         }
 
         return alphabet;
