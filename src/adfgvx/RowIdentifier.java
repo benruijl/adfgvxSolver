@@ -29,11 +29,11 @@ public class RowIdentifier {
         float score = 0;
 
         for (int i = 0; i < freqs.size() - 1; i++) {
-            for (int j = i; j < freqs.size(); j++) {
+            for (int j = i + 1; j < freqs.size(); j++) {
                 score += dissimilarity(freqs.get(i), freqs.get(j));
             }
         }
-
+        
         return score;
     }
 
@@ -47,18 +47,18 @@ public class RowIdentifier {
      * @return The amount of dissimilarity
      */
     private static int dissimilarity(final TObjectIntHashMap<Character> freqA,
-            final TObjectIntHashMap<Character> freqB) {
-        int score = 0;
+	    final TObjectIntHashMap<Character> freqB) {
+	int score = 0;
 
-        for (final Character key : PolybiusSquare.keyName) {
-            int first = freqA.get(key);
-            int second = freqB.get(key);
+	for (final Character key : PolybiusSquare.keyName) {
+	    int first = freqA.get(key);
+	    int second = freqB.get(key);
 
-            score += (first - second) * (first - second);
+	    score += (first - second) * (first - second);
 
-        }
+	}
 
-        return score;
+	return score;
     }
 
     /**
@@ -70,35 +70,35 @@ public class RowIdentifier {
      *            Column that is a row in the square
      */
     public static void findOptimalGrouping(
-            final List<TObjectIntHashMap<Character>> col,
-            final List<TObjectIntHashMap<Character>> row) {
-        final List<TObjectIntHashMap<Character>> total = new ArrayList<TObjectIntHashMap<Character>>();
-        total.addAll(col);
-        total.addAll(row);
+	    final List<TObjectIntHashMap<Character>> col,
+	    final List<TObjectIntHashMap<Character>> row) {
+	final List<TObjectIntHashMap<Character>> total = new ArrayList<TObjectIntHashMap<Character>>();
+	total.addAll(col);
+	total.addAll(row);
 
-        // TODO: prevent checking everything twice (col,row=row,col)
-        List<List<TObjectIntHashMap<Character>>> comb = Utils.combinations(total,
-                total.size() / 2);
+	// TODO: prevent checking everything twice (col,row=row,col)
+	List<List<TObjectIntHashMap<Character>>> comb = Utils.combinations(
+		total, total.size() / 2);
 
-        float bestScore = Float.MAX_VALUE;
-        List<TObjectIntHashMap<Character>> bestc = null;
-        List<TObjectIntHashMap<Character>> bestr = null;
-        for (List<TObjectIntHashMap<Character>> c : comb) {
-            List<TObjectIntHashMap<Character>> r = Utils.complementary(total, c);
+	float bestScore = Float.MAX_VALUE;
+	List<TObjectIntHashMap<Character>> bestc = null;
+	List<TObjectIntHashMap<Character>> bestr = null;
+	for (List<TObjectIntHashMap<Character>> c : comb) {
+	    List<TObjectIntHashMap<Character>> r = Utils
+		    .complementary(total, c);
 
-            final float score = (float) Math.sqrt(groupDissimilarity(c)
-                    + groupDissimilarity(r));
+	    final float score = groupDissimilarity(c) + groupDissimilarity(r);
 
-            if (score < bestScore) {
-                bestScore = score;
-                bestc = c;
-                bestr = r;
-            }
-        }
+	    if (score < bestScore) {
+		bestScore = score;
+		bestc = c;
+		bestr = r;
+	    }
+	}
 
-        col.clear();
-        col.addAll(bestc);
-        row.clear();
-        row.addAll(bestr);
+	col.clear();
+	col.addAll(bestc);
+	row.clear();
+	row.addAll(bestr);
     }
 }

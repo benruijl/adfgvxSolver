@@ -163,7 +163,7 @@ public class Pattern {
     public void findOptimalPatternDistribution(final List<List<Character>> col,
             final List<List<Character>> row) {
         for (int i = 0; i < col.size() - 1; i++) {
-            for (int j = i; j < col.size(); j++) {
+            for (int j = i + 1; j < col.size(); j++) {
                 final float oldScore = patternFitness(col, row);
                 Collections.swap(col, i, j);
 
