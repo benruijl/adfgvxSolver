@@ -79,6 +79,8 @@ public class Analysis {
 		final Character curKey = col.get(j);
 		freq.put(curKey, freq.get(curKey) + 1);
 	    }
+
+	    LOG.info(freq);
 	}
 
 	LOG.info("After sorting:");
@@ -286,9 +288,6 @@ public class Analysis {
 		}
 	    }
 	}
-	
-	LOG.info(correct);
-	LOG.info(correctTrans);
 
 	LOG.info("Correct identification of rows and cols: "
 		+ Math.max(correct, correctTrans) + "/" + key.size());
@@ -315,32 +314,52 @@ public class Analysis {
 	}
 
 	pattern.findOptimalPatternDistribution(charCol, charRow);
+	
+	StringBuffer groups = new StringBuffer("Result: ");
+	for (int i = 0; i < charCol.size(); i++) {
+	    for (int j = 0; j < gridData.size(); j++) {
+		if (charCol.get(i).equals(gridData.get(j))) {
+		    groups.append(j + " ");
+		}
+	    }
 
+	    for (int j = 0; j < gridData.size(); j++) {
+		if (charRow.get(i).equals(gridData.get(j))) {
+		    groups.append(j + " ");
+		}
+	    }
+	}
+
+	LOG.info(groups);
+	
 	// see if it is correct
 	correct = 0;
 	for (int i = 0; i < key.size(); i++) {
-	    if (i % 2 == 0 && charCol.get(i / 2) == gridData.get(key.get(i))) {
+	    if (i % 2 == 0 && charCol.get(i / 2).equals(gridData.get(key.get(i)))) {
 		correct++;
 	    }
 
-	    if (i % 2 == 1 && charRow.get(i / 2) == gridData.get(key.get(i))) {
+	    if (i % 2 == 1 && charRow.get(i / 2).equals(gridData.get(key.get(i)))) {
 		correct++;
 	    }
 	}
 
 	correctTrans = 0;
 	for (int i = 0; i < key.size(); i++) {
-	    if (i % 2 == 1 && charCol.get(i / 2) == gridData.get(key.get(i))) {
+	    if (i % 2 == 1 && charCol.get(i / 2).equals(gridData.get(key.get(i)))) {
 		correctTrans++;
 	    }
 
-	    if (i % 2 == 0 && charRow.get(i / 2) == gridData.get(key.get(i))) {
+	    if (i % 2 == 0 && charRow.get(i / 2).equals(gridData.get(key.get(i)))) {
 		correctTrans++;
 	    }
 	}
 
 	LOG.info("Correct transposition grid after pattern check: "
 		+ Math.max(correct, correctTrans) + "/" + key.size());
+	
+	final String monoSubText = PolybiusSquare.unFraction(charRow, charCol);
+	LOG.info("IOC: " + indexOfCoincidence(monoSubText));
 
 	if (Math.max(correct, correctTrans) == key.size()) {
 	    if (testLevel == 2) {
@@ -352,8 +371,6 @@ public class Analysis {
 	}
 
 	// transposition grid is correct, now do mono sub solving
-	final String monoSubText = PolybiusSquare.unFraction(charRow, charCol);
-
 	float fitness = 0;
 	Map<Character, Character> bestAlphabet = new HashMap<Character, Character>();
 	for (int j = 0; j < 1; j++) {

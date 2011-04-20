@@ -25,16 +25,16 @@ public class RowIdentifier {
      * @return The amount of dissimilarity
      */
     private static float groupDissimilarity(
-            final List<TObjectIntHashMap<Character>> freqs) {
-        float score = 0;
+	    final List<TObjectIntHashMap<Character>> freqs) {
+	float score = 0;
 
-        for (int i = 0; i < freqs.size() - 1; i++) {
-            for (int j = i + 1; j < freqs.size(); j++) {
-                score += dissimilarity(freqs.get(i), freqs.get(j));
-            }
-        }
-        
-        return score;
+	for (int i = 0; i < freqs.size() - 1; i++) {
+	    for (int j = i + 1; j < freqs.size(); j++) {
+		score += dissimilarity(freqs.get(i), freqs.get(j));
+	    }
+	}
+
+	return score;
     }
 
     /**
@@ -96,9 +96,14 @@ public class RowIdentifier {
 	    }
 	}
 
-	col.clear();
-	col.addAll(bestc);
-	row.clear();
-	row.addAll(bestr);
+	if (col != bestc) {
+	    col.clear();
+	    col.addAll(bestc);
+	}
+
+	if (row != bestr) {
+	    row.clear();
+	    row.addAll(bestr);
+	}
     }
 }

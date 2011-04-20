@@ -7,13 +7,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
+
+import utils.Utils;
 
 /**
  * This class provides functions to find the optimal arrangement of columns in
@@ -45,8 +47,8 @@ public class Pattern {
      *             Exception when problems occur with reading the reference file
      */
     public Pattern(final String filename) throws IOException {
-        patternFreq = new HashMap<IntArrayWrapper, Double>();
-        readPatterntetragrams(filename);
+	patternFreq = new HashMap<IntArrayWrapper, Double>();
+	readPatterntetragrams(filename);
     }
 
     /**
@@ -57,41 +59,41 @@ public class Pattern {
      * @return Map with frequencies
      */
     private Map<IntArrayWrapper, Double> calcPatternFrequencies(
-            final String text) {
-        final Map<IntArrayWrapper, Double> patternFreq = new HashMap<IntArrayWrapper, Double>();
+	    final String text) {
+	final Map<IntArrayWrapper, Double> patternFreq = new HashMap<IntArrayWrapper, Double>();
 
-        for (int i = 0; i < text.length() - 4; i++) {
-            final int[] initData = { 0, 1, 2, 3 };
-            final IntArrayWrapper pat = new IntArrayWrapper(initData);
+	for (int i = 0; i < text.length() - 4; i++) {
+	    final int[] initData = { 0, 1, 2, 3 };
+	    final IntArrayWrapper pat = new IntArrayWrapper(initData);
 
-            int highest = 0;
-            for (int j = 0; j < 4; j++) {
-                boolean found = false;
+	    int highest = 0;
+	    for (int j = 0; j < 4; j++) {
+		boolean found = false;
 
-                for (int k = 0; k < j; k++) {
-                    if (text.charAt(i + j) == text.charAt(i + k)) {
-                        pat.getData()[j] = k;
-                        found = true;
-                        break;
-                    }
-                }
+		for (int k = 0; k < j; k++) {
+		    if (text.charAt(i + j) == text.charAt(i + k)) {
+			pat.getData()[j] = k;
+			found = true;
+			break;
+		    }
+		}
 
-                if (!found) {
-                    highest++;
-                    pat.getData()[j] = highest;
-                }
-            }
+		if (!found) {
+		    highest++;
+		    pat.getData()[j] = highest;
+		}
+	    }
 
-            Double num = patternFreq.get(pat);
+	    Double num = patternFreq.get(pat);
 
-            if (num == null) {
-                num = 0.0;
-            }
+	    if (num == null) {
+		num = 0.0;
+	    }
 
-            patternFreq.put(pat, num + 1.0f / (text.length() - 3));
-        }
+	    patternFreq.put(pat, num + 1.0f / (text.length() - 3));
+	}
 
-        return patternFreq;
+	return patternFreq;
     }
 
     /**
@@ -108,14 +110,16 @@ public class Pattern {
      * @return Fitness of this arrangement
      */
     private float patternFitness(final List<List<Character>> col,
-            final List<List<Character>> row) {
+	    final List<List<Character>> row) {
+	return Analysis.indexOfCoincidence(PolybiusSquare.unFraction(row, col));
 
-        return Analysis.indexOfCoincidence(PolybiusSquare.unFraction(row, col));
+	/*
+	 * final Map<IntArrayWrapper, Double> patFreq =
+	 * calcPatternFrequencies(PolybiusSquare .unFraction(row, col));
+	 * 
+	 * return patternDissimilarity(patternFreq, patFreq);
+	 */
 
-       /* final Map<IntArrayWrapper, Double> patFreq = calcPatternFrequencies(PolybiusSquare
-                .unFraction(row, col));
-
-        return (float) Math.sqrt(patternDissimilarity(patternFreq, patFreq));*/
     }
 
     /**
@@ -129,23 +133,23 @@ public class Pattern {
      * @return Dissimilarity between two patterns expressed as an integer
      */
     private float patternDissimilarity(
-            final Map<IntArrayWrapper, Double> freqA,
-            final Map<IntArrayWrapper, Double> freqB) {
-        float score = 0;
+	    final Map<IntArrayWrapper, Double> freqA,
+	    final Map<IntArrayWrapper, Double> freqB) {
+	float score = 0;
 
-        for (final IntArrayWrapper key : freqB.keySet()) {
-            Double first = freqA.get(key);
-            final Double second = freqB.get(key);
+	for (final IntArrayWrapper key : freqB.keySet()) {
+	    Double first = freqA.get(key);
+	    final Double second = freqB.get(key);
 
-            if (first == null) {
-                first = 0.0;
-            }
+	    if (first == null) {
+		first = 0.0;
+	    }
 
-            score += (first - second) * (first - second);
+	    score += (first - second) * (first - second);
 
-        }
+	}
 
-        return score;
+	return score;
     }
 
     /**
@@ -161,36 +165,37 @@ public class Pattern {
      *            Polybius square
      */
     public void findOptimalPatternDistribution(final List<List<Character>> col,
-            final List<List<Character>> row) {
-        for (int i = 0; i < col.size() - 1; i++) {
-            for (int j = i + 1; j < col.size(); j++) {
-                final float oldScore = patternFitness(col, row);
-                Collections.swap(col, i, j);
+	    final List<List<Character>> row) {
+	List<List<List<Character>>> permCol = new ArrayList<List<List<Character>>>();
+	Utils.permutate(col, col.size(), permCol);
+	List<List<List<Character>>> permRow = new ArrayList<List<List<Character>>>();
+	Utils.permutate(row, row.size(), permRow);
 
-                final float newScore = patternFitness(col, row);
+	float bestScore = Float.MAX_VALUE;
+	List<List<Character>> bestCol = col;
+	List<List<Character>> bestRow = row;
 
-                if (newScore > oldScore) {
-                    findOptimalPatternDistribution(col, row);
-                } else {
-                    Collections.swap(col, i, j); // swap back
-                }
-            }
-        }
+	for (List<List<Character>> aCol : permCol) {
+	    for (List<List<Character>> aRow : permRow) {
+		float score = patternFitness(aCol, aRow);
 
-        for (int i = 0; i < row.size() - 1; i++) {
-            for (int j = i; j < row.size(); j++) {
-                final float oldScore = patternFitness(col, row);
-                Collections.swap(row, i, j);
+		if (score > bestScore) {
+		    bestScore = score;
+		    bestCol = aCol;
+		    bestRow = aRow;
+		}
+	    }
+	}
 
-                final float newScore = patternFitness(col, row);
+	if (col != bestCol) {
+	    col.clear();
+	    col.addAll(bestCol);
+	}
 
-                if (newScore > oldScore) {
-                    findOptimalPatternDistribution(col, row);
-                } else {
-                    Collections.swap(row, i, j); // swap back
-                }
-            }
-        }
+	if (row != bestRow) {
+	    row.clear();
+	    row.addAll(bestRow);
+	}
 
     }
 
@@ -203,24 +208,24 @@ public class Pattern {
      *             Error while reading from file
      */
     private void readPatterntetragrams(final String filename)
-            throws IOException {
-        final InputStream file = new FileInputStream(filename);
-        final DataInputStream in = new DataInputStream(file);
+	    throws IOException {
+	final InputStream file = new FileInputStream(filename);
+	final DataInputStream in = new DataInputStream(file);
 
-        final int size = in.readInt();
+	final int size = in.readInt();
 
-        for (int i = 0; i < size; i++) {
-            final int[] tet = new int[4];
-            for (int j = 0; j < 4; j++) {
-                tet[j] = in.readInt();
-            }
+	for (int i = 0; i < size; i++) {
+	    final int[] tet = new int[4];
+	    for (int j = 0; j < 4; j++) {
+		tet[j] = in.readInt();
+	    }
 
-            patternFreq.put(new IntArrayWrapper(tet), in.readDouble());
-        }
+	    patternFreq.put(new IntArrayWrapper(tet), in.readDouble());
+	}
 
-        LOG.info("Pattern tetragrams read.");
+	LOG.info("Pattern tetragrams read.");
 
-        in.close();
+	in.close();
     }
 
     /**
@@ -234,26 +239,26 @@ public class Pattern {
      *             Error while writing to a file
      */
     public void writePattern(final String filename, final String text)
-            throws IOException {
-        final Map<IntArrayWrapper, Double> patTet = calcPatternFrequencies(text);
+	    throws IOException {
+	final Map<IntArrayWrapper, Double> patTet = calcPatternFrequencies(text);
 
-        final OutputStream fstream = new FileOutputStream("pat.dat");
-        final DataOutputStream out = new DataOutputStream(fstream);
-        out.writeInt(patTet.size());
+	final OutputStream fstream = new FileOutputStream("pat.dat");
+	final DataOutputStream out = new DataOutputStream(fstream);
+	out.writeInt(patTet.size());
 
-        /* Print the map */
-        for (final Entry<IntArrayWrapper, Double> entry : patTet.entrySet()) {
-            for (int i = 0; i < 4; i++) {
-                System.out.print(entry.getKey().getData()[i]);
-                out.writeInt(entry.getKey().getData()[i]);
-            }
+	/* Print the map */
+	for (final Entry<IntArrayWrapper, Double> entry : patTet.entrySet()) {
+	    for (int i = 0; i < 4; i++) {
+		System.out.print(entry.getKey().getData()[i]);
+		out.writeInt(entry.getKey().getData()[i]);
+	    }
 
-            System.out.print(" "
-                    + Math.log(entry.getValue() / (text.length() - 3)) + "\n");
+	    System.out.print(" "
+		    + Math.log(entry.getValue() / (text.length() - 3)) + "\n");
 
-            out.writeDouble(Math.log(entry.getValue() / (text.length() - 3)));
-        }
+	    out.writeDouble(Math.log(entry.getValue() / (text.length() - 3)));
+	}
 
-        out.close();
+	out.close();
     }
 }
