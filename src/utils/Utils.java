@@ -98,10 +98,11 @@ public class Utils {
 	    result.add(a);
 	    return;
 	}
+
 	for (int i = 0; i < n; i++) {
-	    Collections.swap(a, i, n - 1);
-	    permutate(a, n - 1, result);
-	    Collections.swap(a, i, n - 1);
+	    List<T> b = new ArrayList<T>(a);
+	    Collections.swap(b, i, n - 1);
+	    permutate(b, n - 1, result);
 	}
     }
 

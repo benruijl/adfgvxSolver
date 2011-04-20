@@ -3,6 +3,9 @@ package adfgvx;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 import org.apache.commons.cli.CommandLine;
@@ -14,6 +17,8 @@ import org.apache.commons.cli.ParseException;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+
+import utils.Utils;
 
 /**
  * This class takes care of the basic setup of the application, like scanning

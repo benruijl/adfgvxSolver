@@ -171,7 +171,7 @@ public class Pattern {
 	List<List<List<Character>>> permRow = new ArrayList<List<List<Character>>>();
 	Utils.permutate(row, row.size(), permRow);
 
-	float bestScore = Float.MAX_VALUE;
+	float bestScore = 0;
 	List<List<Character>> bestCol = col;
 	List<List<Character>> bestRow = row;
 
@@ -179,7 +179,7 @@ public class Pattern {
 	    for (List<List<Character>> aRow : permRow) {
 		float score = patternFitness(aCol, aRow);
 
-		if (score > bestScore) {
+		if (score > bestScore && score > 1.5f && score < 1.95f) {
 		    bestScore = score;
 		    bestCol = aCol;
 		    bestRow = aRow;
